@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor Hub | JYOMARG</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Anime.js for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        :root {
+            /* Palette: Deep Space Cyberpunk */
+            --bg-deep: #050510;
+            --bg-panel: rgba(20, 20, 35, 0.6);
+            --primary-neon: #00f3ff;
+            /* Cyan */
+            --secondary-neon: #bc13fe;
+            /* Purple */
+            --accent-success: #0aff68;
+            /* Green */
+            --accent-danger: #ff2a6d;
+            /* Red */
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+
+            /* Legacy/Compat Variables */
+            --neon-blue: var(--primary-neon);
+            --neon-green: var(--accent-success);
+            --glass: rgba(255, 255, 255, 0.05);
+
+            /* Effects */
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --glow-primary: 0 0 15px rgba(0, 243, 255, 0.4);
+            --glow-text: 0 0 10px rgba(0, 243, 255, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-neon) var(--bg-deep);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-deep);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(188, 19, 254, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.08) 0%, transparent 25%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(5, 5, 16, 0.85);
+            /* Darker glass */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo Area */
+        .brand-box {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-left: 10px;
+        }
+
+        .brand-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, var(--primary-neon));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--glow-text);
+            letter-spacing: 2px;
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 8px var(--primary-neon));
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Navigation */
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover Effect */
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 243, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            border-color: rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+            padding-left: 25px;
+            /* Slide effect */
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover i {
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 5px var(--primary-neon));
+        }
+
+        /* Active State */
+        .nav-link.active {
+            background: rgba(0, 243, 255, 0.15);
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            width: 6px;
+            height: 6px;
+            background: var(--primary-neon);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-neon);
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: var(--glass-border);
+            padding-top: 25px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: var(--glass-border);
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .user-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar-container {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary-neon);
+            object-fit: cover;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            border: 2px solid var(--bg-deep);
+            box-shadow: 0 0 5px var(--accent-success);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .user-role {
+            color: var(--primary-neon);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-danger);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 42, 109, 0.1);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            /* Scroll handled internally */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-scrollable {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-neon);
+        }
+
+        /* --- UTILITY CLASSES FOR CHILD PAGES --- */
+        .glass-panel {
+            background: rgba(20, 20, 35, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            margin-top: 0;
+        }
+
+        .text-neon {
+            color: var(--primary-neon);
+            text-shadow: var(--glow-text);
+        }
+
+        .text-purple {
+            color: var(--secondary-neon);
+        }
+
+        .text-dim {
+            color: var(--text-dim);
+        }
+
+        .btn-neon {
+            background: transparent;
+            color: var(--primary-neon);
+            border: 1px solid var(--primary-neon);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-neon:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        }
+
+        .btn-filled {
+            background: var(--primary-neon);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid var(--primary-neon);
+        }
+
+        .btn-filled:hover {
+            background: transparent;
+            color: var(--primary-neon);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Loader Animation Global */
+        .loader-orbit {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 243, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-neon);
+            animation: spin 1s ease-in-out infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Domain Cards */
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .domain-card {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            color: #fff;
+        }
+
+        .domain-card:hover {
+            border-color: var(--neon-blue);
+            background: rgba(0, 212, 255, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .domain-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--neon-blue);
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .loader i {
+            color: var(--neon-blue);
+        }
+
+        .lesson-output {
+            display: none;
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lesson-output h1,
+        .lesson-output h2,
+        .lesson-output h3 {
+            color: var(--neon-blue);
+        }
+
+        .lesson-output code {
+            background: #1a1a1a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #ffeb3b;
+        }
+
+        .lesson-output pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        #back-to-domains {
+            display: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+            color: var(--neon-blue);
+            font-weight: bold;
+        }
+
+        #back-to-domains:hover {
+            text-decoration: underline;
+        }
+
+        /* Table Styling for Markdown */
+        .lesson-output table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .lesson-output th,
+        .lesson-output td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .lesson-output th {
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-blue);
+            font-weight: bold;
+        }
+
+        .lesson-output tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* PDF Export Styles (Applied via JS during export) */
+        .pdf-mode {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: none !important;
+        }
+
+        .pdf-mode * {
+            color: #000000 !important;
+            background-color: transparent !important;
+        }
+
+        .pdf-mode h1,
+        .pdf-mode h2,
+        .pdf-mode h3,
+        .pdf-mode h4,
+        .pdf-mode strong {
+            color: #000000 !important;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pdf-mode table {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+        }
+
+        .pdf-mode th,
+        .pdf-mode td {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+        }
+
+        .pdf-mode th {
+            background-color: #f0f0f0 !important;
+        }
+
+        /* Roadmap Styles (Imported from CareerArchitect) */
+        .roadmap-timeline {
+            position: relative;
+            padding-left: 30px;
+            border-left: 2px solid rgba(0, 243, 255, 0.2);
+            margin-left: 10px;
+            margin-top: 30px;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -37px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-deep);
+            border: 2px solid var(--secondary-neon);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--secondary-neon);
+        }
+
+        .phase-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .phase-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(188, 19, 254, 0.3);
+            transform: translateX(5px);
+        }
+
+        .phase-title {
+            color: var(--secondary-neon);
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .phase-time {
+            font-size: 0.85rem;
+            color: var(--primary-neon);
+            margin-bottom: 10px;
+            display: inline-block;
+            background: rgba(0, 243, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .phase-desc {
+            font-size: 0.95rem;
+            color: #ccc;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .topic-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="brand-box">
+            <i class="fas fa-atom brand-icon"></i>
+            <span class="brand-logo">JYOMARG</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/abhi" class="nav-link">
+                    <i class="fas fa-microchip"></i> <!-- Changed Icon to Microchip -->
+                    <span>ABHI Core</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/tutor" class="nav-link active">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>AI Tutor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/learn" class="nav-link">
+                    <i class="fas fa-book-reader"></i>
+                    <span>LEARN</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/career-architect" class="nav-link">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Career Architect</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="/profile" class="user-card" title="View Profile">
+                <div class="user-avatar-container">
+                    <img src="/static/images/Avatar.png" alt="User" class="user-avatar" id="sidebarAvatar">
+                    <div class="status-dot"></div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ user.name if user else 'Guest User' }}</span>
+                    <span class="user-role">Architect Level 1</span>
+                </div>
+            </a>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Disconnect System
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <div class="content-scrollable">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div id="back-to-domains" onclick="resetDomains()"
+                    style="display: none; cursor: pointer; color: var(--neon-blue); font-weight: bold;"><i
+                        class="fas fa-arrow-left"></i> All Domains</div>
+
+                <div id="action-buttons" style="display: none; gap: 10px;">
+                    <button id="save-roadmap-btn" class="btn-neon" onclick="saveRoadmapToProfile()">
+                        <i class="fas fa-save"></i> Save to Career Architect
+                    </button>
+                    <button id="download-pdf-btn" class="btn-neon" onclick="downloadRoadmapPDF()"
+                        style="border-color: #00f3ff; color: #fff; font-weight: 500;">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+
+            <h1 id="main-title">AI Tutor Hub</h1>
+            <p id="main-desc">Explore professional domains and start your journey with ABHI.</p>
+
+            <div class="search-container" style="margin-bottom: 30px; position: relative;">
+                <input type="text" id="domain-search"
+                    placeholder="Search or type a new domain (e.g. 'Quantum Computing')..."
+                    style="width: 100%; padding: 15px 50px 15px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none;"
+                    onkeyup="filterDomains()" onkeypress="handleSearchEnter(event)">
+                <i class="fas fa-search"
+                    style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--neon-blue); cursor: pointer;"
+                    onclick="fetchCustomDomain()"></i>
+            </div>
+
+            <div class="domain-grid" id="domain-grid">
+                <!-- Web Development -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Full Stack Web Development')">
+                    <i class="fas fa-code"></i><br>Full Stack Web Dev
+                </div>
+
+                <!-- Data Science & AI -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Data Science and AI')">
+                    <i class="fas fa-brain"></i><br>Data Science & AI
+                </div>
+
+                <!-- Python Programming -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Python Programming')">
+                    <i class="fab fa-python"></i><br>Python Mastery
+                </div>
+
+                <!-- Cyber Security -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Cyber Security')">
+                    <i class="fas fa-shield-alt"></i><br>Cyber Security
+                </div>
+
+                <!-- Cloud Computing -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Cloud Computing (AWS/Azure)')">
+                    <i class="fas fa-cloud"></i><br>Cloud Computing
+                </div>
+
+                <!-- DevOps -->
+                <div class="domain-card" onclick="fetchDomain(this, 'DevOps Engineering')">
+                    <i class="fas fa-server"></i><br>DevOps Engineering
+                </div>
+
+                <!-- Mobile App Dev -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Mobile App Development')">
+                    <i class="fas fa-mobile-alt"></i><br>App Development
+                </div>
+
+                <!-- UI/UX Design -->
+                <div class="domain-card" onclick="fetchDomain(this, 'UI/UX Design')">
+                    <i class="fas fa-pen-nib"></i><br>UI/UX Design
+                </div>
+
+                <!-- Blockchain -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Blockchain & Web3')">
+                    <i class="fas fa-link"></i><br>Blockchain & Web3
+                </div>
+
+                <!-- Game Development -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Game Development')">
+                    <i class="fas fa-gamepad"></i><br>Game Development
+                </div>
+
+                <!-- Big Data -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Big Data Engineering')">
+                    <i class="fas fa-database"></i><br>Big Data Era
+                </div>
+
+                <!-- Software Testing -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Software Testing & QA')">
+                    <i class="fas fa-vial"></i><br>QA & Testing
+                </div>
+
+                <!-- Digital Marketing -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Digital Marketing')">
+                    <i class="fas fa-bullhorn"></i><br>Digital Marketing
+                </div>
+
+                <!-- Robotics & IoT -->
+                <div class="domain-card" onclick="fetchDomain(this, 'Internet of Things (IoT)')">
+                    <i class="fas fa-robot"></i><br>Robotics & IoT
+                </div>
+            </div>
+
+            <div id="no-results" style="display: none; text-align: center; margin-bottom: 20px;">
+                <p style="color: #bbb; margin-bottom: 15px;">Domain not listed? Let ABHI design it for you.</p>
+                <button class="btn-neon" onclick="fetchCustomDomain()">
+                    <i class="fas fa-magic"></i> Generate Roadmap for "<span id="search-term"></span>"
+                </button>
+            </div>
+
+            <div class="loader" id="loader">
+                <i class="fas fa-atom fa-spin fa-4x"></i>
+                <p style="margin-top: 20px;">ABHI is architecting your detailed career roadmap...</p>
+            </div>
+
+            <!-- Legacy Lesson Output (Hidden) -->
+            <div class="lesson-output" id="lesson-output" style="display: none;"></div>
+
+            <!-- Roadmap Timeline Container (New) -->
+            <div class="roadmap-timeline" id="roadmap-timeline-container"></div>
+
+        </div>
+    </main>
+
+    <script>
+        // Active Link Handling (Generic Fallback)
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+
+        // Add simple entrance animation for content
+        document.addEventListener('DOMContentLoaded', () => {
+            anime({
+                targets: '.content-scrollable > *',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                easing: 'easeOutQuad',
+                duration: 800
+            });
+        });
+    </script>
+
+    <style>
+        .roadmap-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .roadmap-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            /* Adjust as needed for timeline line position */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: rgba(255, 255, 255, 0.1);
+            z-index: 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            /* Space for the dot and line */
+            opacity: 0;
+            /* For animation */
+            transform: translateX(-20px);
+            /* For animation */
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            /* Position the dot on the line */
+            top: 15px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--neon-blue);
+            border-radius: 50%;
+            border: 3px solid var(--bg-color);
+            z-index: 1;
+        }
+
+        .phase-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fff;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin-bottom: 10px;
+        }
+
+        .phase-time {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .phase-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .topic-tag {
+            display: inline-block;
+            background-color: rgba(var(--neon-blue-rgb), 0.2);
+            color: var(--neon-blue);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(var(--neon-blue-rgb), 0.5);
+        }
+    </style>
+
+    <script>
+        const converter = new showdown.Converter({ tables: true, strikethrough: true, tasklists: true });
+
+        let currentRoadmapData = null;
+        let currentDomainName = "";
+
+        async function fetchDomain(element, domainName) {
+            const grid = document.getElementById('domain-grid');
+            const cards = document.querySelectorAll('.domain-card');
+            const loader = document.getElementById('loader');
+            const output = document.getElementById('lesson-output');
+            const timelineContainer = document.getElementById('roadmap-timeline-container');
+            const backBtn = document.getElementById('back-to-domains');
+            const actionButtons = document.getElementById('action-buttons');
+            const mainTitle = document.getElementById('main-title');
+            const mainDesc = document.getElementById('main-desc');
+
+            // UI Changes
+            cards.forEach(card => card.style.display = 'none');
+            // element.style.display = 'block'; // Don't show the card itself, just show loader/content
+
+            backBtn.style.display = 'block';
+            actionButtons.style.display = 'none';
+            mainTitle.innerText = domainName;
+            mainDesc.innerText = "Architecting your path...";
+
+            loader.style.display = 'block';
+            output.style.display = 'none';
+            timelineContainer.style.display = 'none';
+
+            currentDomainName = domainName;
+
+            try {
+                // Call Generate Preview API
+                const response = await fetch('/api/career/roadmap/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domain: domainName, preview: true })
+                });
+
+                const roadmap = await response.json();
+
+                if (roadmap.error) {
+                    throw new Error(roadmap.error);
+                }
+
+                currentRoadmapData = roadmap;
+                renderTutorRoadmap(roadmap);
+
+                loader.style.display = 'none';
+                timelineContainer.style.display = 'block';
+                actionButtons.style.display = 'flex';
+                mainDesc.innerText = `Duration: ${roadmap.estimated_duration}`;
+
+            } catch (err) {
+                console.error(err);
+                loader.style.display = 'none';
+                alert("Error: " + err.message);
+                // Also show in output for visibility
+                output.innerText = "Error: " + err.message;
+                output.style.display = 'block';
+            }
+        }
+
+        function renderTutorRoadmap(roadmap) {
+            console.log("Rendering Deep Hierarchical Roadmap:", roadmap);
+
+            if (!roadmap || !roadmap.phases || !Array.isArray(roadmap.phases)) {
+                console.error("Invalid Roadmap Data:", roadmap);
+                alert("AI returned an incomplete roadmap. Please try again.");
+                return;
+            }
+
+            const container = document.getElementById('roadmap-timeline-container');
+            container.innerHTML = '';
+
+            // Set styles for continuous single document display
+            container.style.display = 'block';
+            container.style.borderLeft = 'none';
+            container.style.marginLeft = '0';
+            container.style.padding = '0';
+            container.classList.add('glass-panel');
+            container.style.background = 'rgba(10, 10, 30, 0.4)';
+
+            roadmap.phases.forEach((phase, pIndex) => {
+                let weeksHtml = '';
+
+                if (phase.weeks && Array.isArray(phase.weeks)) {
+                    weeksHtml = phase.weeks.map(week => {
+                        let daysHtml = '';
+                        if (week.days && Array.isArray(week.days)) {
+                            daysHtml = week.days.map(day => {
+                                let topicsHtml = '';
+                                if (day.topics && Array.isArray(day.topics)) {
+                                    topicsHtml = day.topics.map(topic => `
+                                        <div class="topic-entry" style="margin-top: 10px; padding: 10px 15px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border-left: 2px solid var(--secondary-neon); display: flex; flex-direction: column; gap: 5px;">
+                                            <div style="display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;">
+                                                <span style="color: #fff; font-weight: 700; font-size: 0.95rem; white-space: nowrap;">${topic.topic_name}:</span>
+                                                <span style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.4;">${topic.explanation}</span>
+                                            </div>
+                                            <div style="margin-top: 5px; padding: 5px 10px; background: rgba(188, 19, 254, 0.05); border-radius: 4px; font-size: 0.8rem; border: 1px solid rgba(188, 19, 254, 0.1);">
+                                                <span style="color: var(--secondary-neon); font-family: 'Orbitron'; font-size: 0.6rem; margin-right: 8px; font-weight: bold;">[TASK]</span>
+                                                <span style="color: #ccc;">${topic.practice}</span>
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                }
+
+                                return `
+                                    <div class="day-entry" style="margin-bottom: 25px; padding: 15px; border-left: 3px solid var(--primary-neon); background: rgba(0, 243, 255, 0.03); border-radius: 0 8px 8px 0;">
+                                        <div style="display: flex; gap: 10px; align-items: baseline; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 10px;">
+                                            <span style="color: var(--primary-neon); font-weight: 900; font-family: 'Orbitron'; font-size: 0.8rem;">DAY ${day.day_number}</span>
+                                        </div>
+                                        <div class="topics-container">
+                                            ${topicsHtml}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+
+                        return `
+                            <div class="week-block" style="margin-top: 35px;">
+                                <h4 style="color: var(--secondary-neon); font-family: 'Orbitron'; font-size: 1.1rem; border-bottom: 1px dashed rgba(188, 19, 254, 0.3); padding-bottom: 8px; margin-bottom: 20px;">
+                                    WEEK ${week.week_number}: ${week.week_title}
+                                </h4>
+                                <div class="days-container">
+                                    ${daysHtml}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                const phaseHtml = `
+                    <div class="phase-section" style="margin-bottom: 60px; padding: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 30px; border-left: 5px solid var(--primary-neon); padding-left: 20px;">
+                            <h2 style="margin: 0; color: #fff; font-size: 1.8rem; font-family: 'Orbitron'; text-transform: uppercase; letter-spacing: 1px;">
+                                ${phase.phase_name}
+                            </h2>
+                            <span style="color: var(--primary-neon); font-size: 0.9rem; opacity: 0.8; font-style: italic;">Detailed Phase Curriculum</span>
+                        </div>
+                        <div class="weeks-container">
+                            ${weeksHtml}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', phaseHtml);
+            });
+
+            // Animate
+            anime({
+                targets: '.phase-section',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(300),
+                easing: 'easeOutQuad'
+            });
+        }
+
+        async function saveRoadmapToProfile() {
+            if (!currentRoadmapData) return;
+
+            const btn = document.getElementById('save-roadmap-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const response = await fetch('/api/career/roadmap/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        domain: currentDomainName,
+                        roadmap: currentRoadmapData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                    btn.style.borderColor = 'var(--accent-success)';
+                    btn.style.color = 'var(--accent-success)';
+                    setTimeout(() => {
+                        alert("Roadmap saved to Career Architect successfully!");
+                    }, 500);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (e) {
+                alert("Failed to save roadmap: " + e.message);
+                btn.innerHTML = originalText;
+            }
+        }
+
+
+
+        async function downloadRoadmapPDF() {
+            if (!currentRoadmapData) return;
+            const btn = document.getElementById('download-pdf-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.position = 'fixed';
+            pdfContainer.style.left = '0';
+            pdfContainer.style.top = '0';
+            pdfContainer.style.zIndex = '-9999';
+            pdfContainer.style.opacity = '0.01';
+            pdfContainer.style.width = '210mm';
+            pdfContainer.style.backgroundColor = '#ffffff';
+            pdfContainer.style.color = '#333333';
+            pdfContainer.style.padding = '40px';
+            pdfContainer.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+            let html = `
+                <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
+                    <h1 style="margin: 0; font-size: 24pt; color: #000;">${currentRoadmapData.title}</h1>
+                    <p style="margin: 5px 0; color: #666; font-size: 11pt;">Target Domain: <strong style="color: #000;">${currentDomainName}</strong> | Estimated Duration: <strong style="color: #000;">${currentRoadmapData.estimated_duration}</strong></p>
+                </div>
+            `;
+
+            currentRoadmapData.phases.forEach(phase => {
+                html += `
+                    <div style="margin-top: 35px; page-break-inside: avoid;">
+                        <h2 style="background: #f4f4f4; padding: 12px; border-left: 6px solid #333; color: #000; font-size: 18pt; margin-bottom: 20px;">${phase.phase_name}</h2>
+                    </div>
+                `;
+
+                phase.weeks.forEach(week => {
+                    html += `
+                        <div style="margin-left: 20px; margin-top: 25px; page-break-inside: avoid;">
+                            <h3 style="color: #444; border-bottom: 1px solid #ddd; padding-bottom: 8px; font-size: 15pt;">Week ${week.week_number}: ${week.week_title}</h3>
+                        </div>
+                    `;
+
+                    week.days.forEach(day => {
+                        html += `
+                            <div style="margin-left: 35px; margin-top: 20px; page-break-inside: avoid; border-left: 3px solid #eee; padding-left: 15px;">
+                                <div style="font-weight: bold; color: #222; font-size: 12pt; margin-bottom: 10px;">Day ${day.day_number}</div>
+                        `;
+
+                        day.topics.forEach(topic => {
+                            html += `
+                                <div style="margin-top: 12px; margin-bottom: 15px;">
+                                    <div style="font-weight: 600; color: #000; font-size: 11pt;">• ${topic.topic_name}</div>
+                                    <div style="font-size: 10.5pt; color: #444; margin-left: 18px; line-height: 1.5; margin-top: 4px;">${topic.explanation}</div>
+                                    <div style="font-size: 9.5pt; color: #666; margin-left: 18px; font-style: italic; margin-top: 6px; background: #fafafa; padding: 5px 10px; border: 1px solid #efefef; border-radius: 4px;">
+                                        <strong style="color: #555;">[PRACTICE TASK]</strong> ${topic.practice}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    });
+                });
+            });
+
+            // Add Footer
+            html += `
+                <div style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #999; font-size: 9pt;">
+                    Generated by ABHI Career Architect | JYOMARG Ecosystem
+                </div>
+            `;
+
+            pdfContainer.innerHTML = html;
+            document.body.appendChild(pdfContainer);
+
+            const opt = {
+                margin: [15, 15],
+                filename: `${currentDomainName.replace(/\s+/g, '_')}_Roadmap.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(opt).from(pdfContainer).save();
+            } catch (err) {
+                console.error("PDF Export Error:", err);
+                alert("Failed to generate PDF.");
+            } finally {
+                document.body.removeChild(pdfContainer);
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function resetDomains() {
+            const output = document.getElementById('lesson-output');
+            const timelineContainer = document.getElementById('roadmap-timeline-container');
+            const backBtn = document.getElementById('back-to-domains');
+            const actionButtons = document.getElementById('action-buttons');
+            const loader = document.getElementById('loader');
+            const mainTitle = document.getElementById('main-title');
+            const mainDesc = document.getElementById('main-desc');
+            const searchContainer = document.querySelector('.search-container');
+            const noResults = document.getElementById('no-results');
+
+            cards.forEach(card => card.style.display = 'block');
+            output.style.display = 'none';
+            if (timelineContainer) timelineContainer.style.display = 'none';
+            backBtn.style.display = 'none';
+            if (actionButtons) actionButtons.style.display = 'none';
+            loader.style.display = 'none';
+            if (noResults) noResults.style.display = 'none';
+            if (searchContainer) searchContainer.style.display = 'block';
+            document.getElementById('domain-search').value = '';
+
+            mainTitle.innerText = "AI Tutor Hub";
+            mainDesc.innerText = "Explore professional domains and start your journey with ABHI.";
+        }
+
+        function filterDomains() {
+            const query = document.getElementById('domain-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.domain-card');
+            const noResults = document.getElementById('no-results');
+            const searchTermSpan = document.getElementById('search-term');
+            let hasVisible = false;
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'block';
+                    hasVisible = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (!hasVisible && query.length > 0) {
+                noResults.style.display = 'block';
+                searchTermSpan.innerText = document.getElementById('domain-search').value;
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        function handleSearchEnter(e) {
+            if (e.key === 'Enter') {
+                const query = document.getElementById('domain-search').value;
+                const cards = document.querySelectorAll('.domain-card');
+                let hasVisible = false;
+
+                cards.forEach(card => {
+                    if (card.style.display !== 'none') hasVisible = true;
+                });
+
+                if (!hasVisible && query) {
+                    fetchCustomDomain();
+                }
+            }
+        }
+
+        function fetchCustomDomain() {
+            const query = document.getElementById('domain-search').value;
+            if (query) {
+                document.getElementById('no-results').style.display = 'none';
+                document.querySelector('.search-container').style.display = 'none';
+                fetchDomain(null, query);
+            }
+        }
+
+    </script>
+
+
+</body>
+
+</html>

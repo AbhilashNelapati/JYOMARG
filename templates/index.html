@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | JYOMARG</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+
+    <!-- Anime.js for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        :root {
+            /* Palette: Deep Space Cyberpunk */
+            --bg-deep: #050510;
+            --bg-panel: rgba(20, 20, 35, 0.6);
+            --primary-neon: #00f3ff;
+            /* Cyan */
+            --secondary-neon: #bc13fe;
+            /* Purple */
+            --accent-success: #0aff68;
+            /* Green */
+            --accent-danger: #ff2a6d;
+            /* Red */
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+
+            /* Legacy/Compat Variables */
+            --neon-blue: var(--primary-neon);
+            --neon-green: var(--accent-success);
+            --glass: rgba(255, 255, 255, 0.05);
+
+            /* Effects */
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --glow-primary: 0 0 15px rgba(0, 243, 255, 0.4);
+            --glow-text: 0 0 10px rgba(0, 243, 255, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-neon) var(--bg-deep);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-deep);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(188, 19, 254, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.08) 0%, transparent 25%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(5, 5, 16, 0.85);
+            /* Darker glass */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo Area */
+        .brand-box {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-left: 10px;
+        }
+
+        .brand-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, var(--primary-neon));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--glow-text);
+            letter-spacing: 2px;
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 8px var(--primary-neon));
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Navigation */
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover Effect */
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 243, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            border-color: rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+            padding-left: 25px;
+            /* Slide effect */
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover i {
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 5px var(--primary-neon));
+        }
+
+        /* Active State */
+        .nav-link.active {
+            background: rgba(0, 243, 255, 0.15);
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            width: 6px;
+            height: 6px;
+            background: var(--primary-neon);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-neon);
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: var(--glass-border);
+            padding-top: 25px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: var(--glass-border);
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .user-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar-container {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary-neon);
+            object-fit: cover;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            border: 2px solid var(--bg-deep);
+            box-shadow: 0 0 5px var(--accent-success);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .user-role {
+            color: var(--primary-neon);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-danger);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 42, 109, 0.1);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            /* Scroll handled internally */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-scrollable {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-neon);
+        }
+
+        /* --- UTILITY CLASSES FOR CHILD PAGES --- */
+        .glass-panel {
+            background: rgba(20, 20, 35, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            margin-top: 0;
+        }
+
+        .text-neon {
+            color: var(--primary-neon);
+            text-shadow: var(--glow-text);
+        }
+
+        .text-purple {
+            color: var(--secondary-neon);
+        }
+
+        .text-dim {
+            color: var(--text-dim);
+        }
+
+        .btn-neon {
+            background: transparent;
+            color: var(--primary-neon);
+            border: 1px solid var(--primary-neon);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-neon:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        }
+
+        .btn-filled {
+            background: var(--primary-neon);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid var(--primary-neon);
+        }
+
+        .btn-filled:hover {
+            background: transparent;
+            color: var(--primary-neon);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Loader Animation Global */
+        .loader-orbit {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 243, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-neon);
+            animation: spin 1s ease-in-out infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Atom Spinner */
+        .atom-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            z-index: 10;
+        }
+
+        .atom-core {
+            width: 10px;
+            height: 10px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .atom-orbit {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            animation: rotate 2s linear infinite;
+        }
+
+        .atom-orbit:nth-child(2) {
+            animation-delay: -0.5s;
+            transform: rotate(60deg);
+        }
+
+        .atom-orbit:nth-child(3) {
+            animation-delay: -1s;
+            transform: rotate(120deg);
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg) rotateX(70deg) rotateY(10deg);
+            }
+
+            100% {
+                transform: rotate(360deg) rotateX(70deg) rotateY(10deg);
+            }
+        }
+
+        /* Welcome Header */
+        .welcome-header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .welcome-header h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: var(--neon-blue);
+        }
+
+        /* Notification Bell */
+        .notification-box {
+            position: relative;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .notification-box:hover {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+
+        .badger {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-danger);
+            border-radius: 50%;
+            border: 2px solid var(--bg-deep);
+            box-shadow: 0 0 5px var(--accent-danger);
+        }
+
+        .notif-popup {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            width: 320px;
+            background: rgba(10, 10, 25, 0.95);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(15px);
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notif-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .btn-search-sm {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: auto;
+            margin-right: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-search-sm:hover {
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        .notif-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .notif-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .notif-title {
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .notif-company {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .notif-score {
+            font-size: 0.75rem;
+            color: var(--accent-success);
+            margin-top: 5px;
+        }
+
+        .notif-footer {
+            padding: 10px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .notif-footer a {
+            color: var(--neon-blue);
+            font-size: 0.85rem;
+            text-decoration: none;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .welcome-header p {
+            opacity: 0.6;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* Action Cards */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .action-card {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: 0.3s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .action-card i {
+            font-size: 2.5rem;
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .action-card h3 {
+            font-size: 1.3rem;
+            margin: 10px 0;
+            color: var(--neon-blue);
+        }
+
+        .action-card p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        /* Quick Chat & AI */
+        .quick-chat {
+            margin-top: 50px;
+            background: var(--glass);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(43, 255, 136, 0.2);
+            position: relative;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(43, 255, 136, 0.3);
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        .btn-send,
+        .btn-mic {
+            padding: 0 20px;
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-mic {
+            background: var(--glass);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .btn-mic.listening {
+            background: #ff4d4d;
+            color: #fff;
+            border-color: #ff4d4d;
+        }
+
+        #quickChatResponse {
+            margin-top: 15px;
+            color: #fff;
+            font-size: 0.9rem;
+            display: none;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Markdown Styles */
+        #quickChatResponse h1,
+        #quickChatResponse h2 {
+            font-size: 1.1rem;
+            color: var(--neon-blue);
+        }
+
+        #quickChatResponse code {
+            background: #1a1a1a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #ffeb3b;
+        }
+
+        #quickChatResponse pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            margin: 15% auto;
+            padding: 40px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            text-align: center;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 10px;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-neon);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="brand-box">
+            <i class="fas fa-atom brand-icon"></i>
+            <span class="brand-logo">JYOMARG</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/abhi" class="nav-link">
+                    <i class="fas fa-microchip"></i> <!-- Changed Icon to Microchip -->
+                    <span>ABHI Core</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/tutor" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Tutor AI</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/learn" class="nav-link">
+                    <i class="fas fa-book-reader"></i>
+                    <span>LEARN</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/career-architect" class="nav-link">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Career Architect</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="/profile" class="user-card" title="View Profile">
+                <div class="user-avatar-container">
+                    <img src="/static/images/Avatar.png" alt="User" class="user-avatar" id="sidebarAvatar">
+                    <div class="status-dot"></div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ user.name if user else 'Guest User' }}</span>
+                    <span class="user-role">Architect Level 1</span>
+                </div>
+            </a>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Disconnect System
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <div class="content-scrollable">
+
+            <div class="welcome-header">
+                <div>
+                    <h1>SYSTEM <span>ACTIVE</span></h1>
+                    <p>Welcome back, Architect. All intelligence modules are online.</p>
+                </div>
+
+                <div class="notification-container" style="position: relative;">
+                    <div class="notification-box" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badger" id="notif-badge" style="display: none;"></span>
+                    </div>
+
+                    <div class="notif-popup" id="notif-popup">
+                        <div class="notif-header">
+                            <span><i class="fas fa-briefcase"></i> Job Intelligence</span>
+                            <button class="btn-search-sm" onclick="searchJobs(event)"><i class="fas fa-sync-alt"></i>
+                                Search</button>
+                            <i class="fas fa-times" onclick="toggleNotifications()" style="cursor: pointer;"></i>
+                        </div>
+                        <div class="notif-list" id="notif-list">
+                            <p style="padding: 20px; color: #aaa; text-align: center;">Scanning neural network...</p>
+                        </div>
+                        <div class="notif-footer">
+                            <a href="/profile">View Full Analysis</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="grid-container">
+                <a href="/tutor" class="action-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>AI Tutor Hub</h3>
+                    <p>Master complex domains with structured roadmaps and interactive AI tutoring.</p>
+                </a>
+
+                <a href="/resume" class="action-card">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <h3>Resume Architect</h3>
+                    <p>AI-powered ATS optimization to make your career history stand out.</p>
+                </a>
+
+                <a href="/analyzer" class="action-card">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3>Skill Analyzer</h3>
+                    <p>Identify critical gaps in your profile compared to industry requirements.</p>
+                </a>
+            </div>
+
+            <div class="grid-container">
+            </div>
+
+            <!-- Job Details Modal -->
+            <div id="job-modal" class="modal">
+                <div class="modal-content glass-panel">
+                    <span class="close-modal" onclick="closeJobModal()">&times;</span>
+                    <h2 id="modal-title" class="text-neon"></h2>
+                    <h4 id="modal-company" class="text-purple"></h4>
+                    <p id="modal-reason" style="margin: 20px 0; color: #ddd;"></p>
+                    <a id="modal-link" href="#" target="_blank" class="btn-filled">Apply Now <i
+                            class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+
+            <div class="quick-chat">
+                <div class="atom-spinner" id="loadingAtom">
+                    <div class="atom-core"></div>
+                    <div class="atom-orbit"></div>
+                    <div class="atom-orbit"></div>
+                    <div class="atom-orbit"></div>
+                </div>
+
+                <div class="chat-header">
+                    <img src="/static/images/Avatar.png" alt="ABHI" class="chat-avatar" id="aiAvatar">
+                    <div>
+                        <h3 style="margin: 0; color: var(--neon-green); font-size: 1.1rem;">ABHI AI Assistant</h3>
+                        <p style="margin: 0; font-size: 0.75rem; opacity: 0.6;">Direct Neural Link Operational...</p>
+                    </div>
+                </div>
+
+                <div class="chat-input-wrapper">
+                    <input type="text" id="quickChatInput"
+                        placeholder="Type or ask verbally (e.g., Explain Quantum Computing)...">
+                    <button class="btn-mic" id="micBtn"><i class="fas fa-microphone"></i></button>
+                    <button class="btn-send" id="quickChatBtn">SEND</button>
+                </div>
+
+                <div id="quickChatResponse"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Active Link Handling (Generic Fallback)
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+
+
+        // Add simple entrance animation for content
+        document.addEventListener('DOMContentLoaded', () => {
+
+            anime({
+                targets: '.content-scrollable > *',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                easing: 'easeOutQuad',
+                duration: 800
+            });
+
+            // Fetch Notifications
+            fetchNotifications();
+        });
+
+        async function fetchNotifications() {
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+                const list = document.getElementById('notif-list');
+                const badge = document.getElementById('notif-badge');
+
+                if (data.notifications && data.notifications.length > 0) {
+                    badge.style.display = 'block';
+                    list.innerHTML = '';
+
+                    data.notifications.slice(0, 3).forEach(n => {
+                        const item = document.createElement('div');
+                        item.className = 'notif-item';
+                        item.innerHTML = `
+                            <div class="notif-title">${n.job_title}</div>
+                            <div class="notif-company">${n.company}</div>
+                            <div class="notif-score"><i class="fas fa-check-circle"></i> ${n.match_score}% Match</div>
+                        `;
+                        // Store full object in click handler
+                        item.onclick = () => openJobModal(n);
+                        list.appendChild(item);
+                    });
+                } else {
+                    badge.style.display = 'none';
+                    list.innerHTML = '<p style="padding: 15px; text-align: center; color: #777;">No new alerts.</p>';
+                }
+            } catch (e) {
+                console.error("Notif Error:", e);
+            }
+        }
+
+        function toggleNotifications() {
+            const popup = document.getElementById('notif-popup');
+            popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function openJobModal(job) {
+            document.getElementById('modal-title').innerText = job.job_title;
+            document.getElementById('modal-company').innerText = job.company;
+            document.getElementById('modal-reason').innerText = job.reason;
+            document.getElementById('modal-link').href = job.apply_link;
+
+            document.getElementById('job-modal').style.display = 'block';
+            document.getElementById('notif-popup').style.display = 'none'; // Close popup
+        }
+
+        function closeJobModal() {
+            document.getElementById('job-modal').style.display = 'none';
+        }
+
+        // Close modal if clicked outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('job-modal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+
+    <script>
+        const input = document.getElementById('quickChatInput');
+        const responseDiv = document.getElementById('quickChatResponse');
+        const atomSpinner = document.getElementById('loadingAtom');
+        const aiAvatar = document.getElementById('aiAvatar');
+        const micBtn = document.getElementById('micBtn');
+
+        // Markdown Converter
+        const converter = new showdown.Converter();
+
+        // Text to Speech logic
+        function speakText(text) {
+            window.speechSynthesis.cancel(); // Stop previous
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.pitch = 1;
+            utterance.rate = 1;
+
+            // Pulsing Animation start
+            utterance.onstart = () => {
+                // We need to target the SIDEBAR avatar as requested, and maybe the chat avatar too
+                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                if (sidebarAvatar) sidebarAvatar.classList.add('pulsing');
+                aiAvatar.classList.add('pulsing');
+            };
+
+            utterance.onend = () => {
+                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                if (sidebarAvatar) sidebarAvatar.classList.remove('pulsing');
+                aiAvatar.classList.remove('pulsing');
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        async function askAbhi(query) {
+            if (!query) return;
+
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = "Thinking...";
+            atomSpinner.style.display = 'block';
+
+            try {
+                const formData = new FormData();
+                formData.append('query', query);
+
+                const res = await fetch('/ask', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                // Expected JSON: { response: "string_json" } or just output string
+                // Our app.py returns { response: response_text }
+                // And abhi_ai.py now returns a JSON STRING inside that response_text
+
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(data.response);
+                } catch (e) {
+                    // Fallback if not JSON
+                    parsedData = { spoken_summary: "Here is the response.", display_content: data.response };
+                }
+
+                // Render Markdown
+                responseDiv.innerHTML = converter.makeHtml(parsedData.display_content);
+
+                // Voice Output (Smart Summary)
+                speakText(parsedData.spoken_summary);
+
+            } catch (error) {
+                responseDiv.innerText = "Error: Neural Link Interrupted.";
+                console.error(error);
+            } finally {
+                atomSpinner.style.display = 'none';
+            }
+        }
+
+        document.getElementById('quickChatBtn').addEventListener('click', () => {
+            askAbhi(input.value);
+        });
+
+        // Enter key support
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askAbhi(input.value);
+        });
+
+        // Voice Input Logic (Web Speech API)
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            micBtn.addEventListener('click', () => {
+                if (micBtn.classList.contains('listening')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+
+            recognition.onstart = () => {
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                askAbhi(transcript); // Auto-send on voice end
+            };
+        } else {
+            micBtn.style.display = 'none'; // Hide if not supported
+        }
+    </script>
+
+
+</body>
+
+</html>

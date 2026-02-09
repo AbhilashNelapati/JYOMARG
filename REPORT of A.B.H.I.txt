@@ -1,0 +1,82 @@
+
+---
+
+# **Project Report: A.B.H.I AI Assistant**
+
+**Part of Project: JYOMARG** **Date:** January 28, 2026
+
+---
+
+## **1. Executive Summary**
+
+**A.B.H.I (Artificial Being for Human Intelligence)** is a sophisticated, multimodal AI career assistant integrated into the **JYOMARG** portal. Developed during the **Gemini 3 Hackathon** in January 2026, ABHI aims to bridge the gap between academic learning and industrial requirements. The assistant provides personalized career roadmaps, course recommendations, and coding assistance through a modern, voice-enabled web interface.
+
+---
+
+## **2. System Architecture**
+
+The system is built using a robust full-stack architecture to ensure low latency and high accuracy:
+
+* **Frontend:** Developed using **HTML5, CSS3**, and **JavaScript**. It features a "Jarvis-themed" dark UI with a glowing avatar animation that pulses when the AI is speaking.
+* **Backend:** Powered by the **FastAPI** framework for high-performance asynchronous request handling.
+* **AI Engine:** Utilizes the **Gemini 3 Flash Preview** model. This model was selected for its advanced reasoning capabilities and efficient processing of complex career-related queries.
+* **Speech Integration:** * **Speech-to-Text:** Uses the Web Speech API for real-time voice command recognition.
+* **Text-to-Speech:** Features a customized summarization logic that converts long technical responses into concise, natural-sounding voice replies.
+
+
+
+---
+
+## **3. Key Features & Functionalities**
+
+### **3.1. Personalized Introduction**
+
+Unlike standard chatbots, ABHI features conditional introduction logic. It introduces itself as the "Artificial Brain for Human Intelligence" only when greeted (e.g., "Hi" or "Hello") or when asked about its identity, ensuring a natural user experience.
+
+### **3.2. Course Discovery & Structured Data**
+
+ABHI scans for quality educational resources and presents them in a structured **Markdown Table** format. This allows students to compare platforms, prices, and syllabi at a glance.
+
+### **3.3. Smart Voice Summarization**
+
+To prevent "voice fatigue," the assistant includes a summarization algorithm. While the screen displays full technical data (like tables), the voice output provides a 2-sentence executive summary of the findings.
+
+### **3.4. Technical & Coding Support**
+
+The assistant is specialized in solving complex coding problems such as:
+
+* `getMaximumSubarray`
+* `calculateArrayXOR`
+* Debugging and optimizing Python scripts for competitive programming.
+
+---
+
+## **4. Technical Stack**
+
+| Component | Technology |
+| --- | --- |
+| **Language** | Python 3.x |
+| **Framework** | FastAPI / Uvicorn |
+| **AI Model** | Gemini 3 Flash Preview (via Google Generative AI API) |
+| **Libraries** | `google-generativeai`, `python-dotenv`, `Jinja2`, `Showdown.js` |
+| **Deployment** | Localhost (Port 8000) for development phase |
+
+---
+
+## **5. Future Scope: Project JYOMARG**
+
+While the ABHI Assistant is now fully functional, the broader **JYOMARG** vision includes:
+
+* **Resume Generation:** Automatically creating ATS-friendly resumes based on student profiles.
+* **Skill Gap Analysis:** Visualizing the difference between a student’s current skills and industry standards through data charts.
+* **Mock Interview Module:** AI-driven voice interviews with real-time feedback.
+* **Career Guidance for Portals:** Assisting students specifically with applications on platforms like the **Cognizant Superset portal**.
+
+---
+
+## **6. Conclusion**
+
+The ABHI AI Assistant represents a significant step forward in automated career counseling. By combining the power of the **Gemini 3 model** with an intuitive, multimodal interface, Project JYOMARG provides a comprehensive ecosystem for students to discover, learn, and secure their professional futures.
+
+---
+

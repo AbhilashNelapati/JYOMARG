@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEARN - AI Course Architect | JYOMARG</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --primary-bg: #050a14;
+            --secondary-bg: #0a1124;
+            --glass: rgba(255, 255, 255, 0.05);
+            --neon-blue: #00f3ff;
+            --neon-green: #0aff68;
+            --neon-purple: #bd00ff;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            /* Added for sidebar compatibility */
+            --accent-danger: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: rgba(5, 5, 16, 0.85);
+            /* Darker glass */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo Area */
+        .brand-box {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-left: 10px;
+        }
+
+        .brand-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+            letter-spacing: 2px;
+            margin-bottom: 0;
+            display: block;
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--neon-blue);
+            filter: drop-shadow(0 0 8px var(--neon-blue));
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Navigation */
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover Effect */
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 243, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            border-color: rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+            padding-left: 25px;
+            /* Slide effect */
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            min-width: auto;
+        }
+
+        .nav-link:hover i {
+            color: var(--neon-blue);
+            filter: drop-shadow(0 0 5px var(--neon-blue));
+        }
+
+        /* Active State */
+        .nav-link.active {
+            background: rgba(0, 243, 255, 0.15);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            width: 6px;
+            height: 6px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .nav-link span {
+            opacity: 1;
+            margin-left: 0;
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 25px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .user-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar-container {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-purple);
+            object-fit: cover;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            border: 2px solid var(--primary-bg);
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .user-role {
+            color: var(--neon-blue);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-danger);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 42, 109, 0.1);
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            padding-bottom: 80px;
+            /* Added padding to prevent bottom clipping */
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* --- Views Management --- */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Dashboard View --- */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .create-course-box {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .create-course-box input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            padding: 12px;
+            color: #fff;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+
+        .btn-neon {
+            background: var(--neon-blue);
+            color: #000;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+        }
+
+        .btn-neon:hover {
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding-bottom: 20px;
+        }
+
+        .course-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-card:hover {
+            border-color: var(--neon-purple);
+            transform: translateY(-5px);
+        }
+
+        .course-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-continue:hover {
+            background: var(--neon-purple);
+            color: #fff;
+        }
+
+        /* --- Player View --- */
+        .player-container {
+            display: flex;
+            height: 90vh;
+            gap: 20px;
+        }
+
+        .player-sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .week-item {
+            margin-bottom: 15px;
+        }
+
+        .week-header {
+            font-size: 1rem;
+            color: var(--neon-blue);
+            margin-bottom: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .day-list {
+            list-style: none;
+            padding-left: 10px;
+            display: none;
+            /* Collapsed by default */
+        }
+
+        .day-list.open {
+            display: block;
+        }
+
+        /* Carousel Styles */
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .skills-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        .skill-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 210px;
+            /* Changed from fixed height to min-height to prevent clipping */
+            padding-bottom: 15px;
+
+            /* Fixed width for carousel: (Container Width - Gap * 3) / 4 */
+            /* Assuming main content has padding, let's use min-width */
+            min-width: 220px;
+            flex: 0 0 auto;
+        }
+
+        .skill-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--neon-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .carousel-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .carousel-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .prev-btn {
+            margin-right: 15px;
+        }
+
+        .next-btn {
+            margin-left: 15px;
+        }
+
+        .skill-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .skill-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .btn-enroll {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-enroll:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .day-item {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            border-left: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .day-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .day-item.active {
+            background: rgba(0, 243, 255, 0.1);
+            color: #fff;
+            border-left-color: var(--neon-blue);
+        }
+
+        .day-item.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .day-item.completed i {
+            color: var(--neon-green);
+        }
+
+        .player-content {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Markdown Content Styles */
+        .markdown-body h1,
+        .markdown-body h2 {
+            color: var(--neon-blue);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .markdown-body code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: var(--neon-green);
+            font-family: monospace;
+        }
+
+        .markdown-body pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        /* --- Quiz Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--secondary-bg);
+            width: 60%;
+            max-height: 80vh;
+            border-radius: 15px;
+            border: 1px solid var(--neon-purple);
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .option-label {
+            display: block;
+            padding: 10px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option-label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .option-input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="brand-box">
+            <i class="fas fa-atom brand-icon"></i>
+            <span class="brand-logo">JYOMARG</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/abhi" class="nav-link">
+                    <i class="fas fa-microchip"></i>
+                    <span>ABHI Core</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/tutor" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>AI Tutor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/learn" class="nav-link active">
+                    <i class="fas fa-book-reader"></i>
+                    <span>LEARN</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/career-architect" class="nav-link">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Career Architect</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="/profile" class="user-card" title="View Profile">
+                <div class="user-avatar-container">
+                    <img src="/static/images/Avatar.png" alt="User" class="user-avatar" id="sidebarAvatar">
+                    <div class="status-dot"></div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ user.name if user else 'Guest User' }}</span>
+                    <span class="user-role">Architect Level 1</span>
+                </div>
+            </a>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Disconnect System
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view-section active">
+            <div class="header-section">
+                <h1><i class="fas fa-graduation-cap" style="color: var(--neon-green);"></i> My Learning Journey</h1>
+            </div>
+
+            <div class="create-course-box">
+                <i class="fas fa-magic" style="font-size: 1.5rem; color: var(--neon-purple);"></i>
+                <input type="text" id="topicInput"
+                    placeholder="What do you want to master today? (e.g., Python, Machine Learning, Digital Marketing)">
+                <button class="btn-neon" onclick="generateCourse()">Start Learning</button>
+            </div>
+
+            <!-- Explore Skills Section -->
+            <h2
+                style="margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                Explore Skill Paths</h2>
+            <div class="carousel-wrapper">
+                <button class="carousel-btn prev-btn" onclick="scrollSkills(-1)"><i
+                        class="fas fa-chevron-left"></i></button>
+
+                <div class="skills-carousel" id="skillsGrid">
+                    <!-- Skill Cards -->
+                    <div class="skill-card">
+                        <i class="fab fa-python skill-icon" style="color: #306998;"></i>
+                        <div class="skill-name">Python</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Python')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-java skill-icon" style="color: #f89820;"></i>
+                        <div class="skill-name">Java</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Java')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-code skill-icon" style="color: #00599C;"></i>
+                        <div class="skill-name">C++</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('C++')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-copyright skill-icon" style="color: #A8B9CC;"></i>
+                        <div class="skill-name">C</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('C Programming')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-microsoft skill-icon" style="color: #68217A;"></i>
+                        <div class="skill-name">C#</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('C#')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-r-project skill-icon" style="color: #276DC3;"></i>
+                        <div class="skill-name">R</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('R Programming')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-google skill-icon" style="color: #00ADD8;"></i>
+                        <div class="skill-name">Go</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Go Language')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-layer-group skill-icon" style="color: #FFD700;"></i>
+                        <div class="skill-name">Data Structures</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Data Structures & Algorithms')">Enroll
+                            Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-brain skill-icon" style="color: #FF2A6D;"></i>
+                        <div class="skill-name">Artificial Intelligence</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Artificial Intelligence')">Enroll
+                            Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-robot skill-icon" style="color: #05D9E8;"></i>
+                        <div class="skill-name">Machine Learning</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Machine Learning')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-microchip skill-icon" style="color: #BD00FF;"></i>
+                        <div class="skill-name">AI & ML</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('AI & Machine Learning')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-database skill-icon" style="color: #00F3FF;"></i>
+                        <div class="skill-name">Data Science</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Data Science')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-chart-line skill-icon" style="color: #0AFF68;"></i>
+                        <div class="skill-name">Data Analyst</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Data Analyst')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-terminal skill-icon" style="color: #FF5722;"></i>
+                        <div class="skill-name">Prompt Engineering</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Prompt Engineering')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-laptop-code skill-icon" style="color: #61DAFB;"></i>
+                        <div class="skill-name">Full Stack Web Dev (Python & Java)</div>
+                        <button class="btn-enroll"
+                            onclick="enrollInTopic('Python & Java Full Stack Web Development')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-brain skill-icon" style="color: #9C27B0;"></i>
+                        <div class="skill-name">Data Science & AI</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Data Science & AI')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-python skill-icon" style="color: #FFD43B;"></i>
+                        <div class="skill-name">Python Mastery</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Python Mastery')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-shield-alt skill-icon" style="color: #4CAF50;"></i>
+                        <div class="skill-name">Cyber Security</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Cyber Security')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-cloud skill-icon" style="color: #03A9F4;"></i>
+                        <div class="skill-name">Cloud Computing</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Cloud Computing')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-server skill-icon" style="color: #607D8B;"></i>
+                        <div class="skill-name">DevOps Engineering</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('DevOps Engineering')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-mobile-alt skill-icon" style="color: #E91E63;"></i>
+                        <div class="skill-name">App Development</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('App Development')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-pencil-ruler skill-icon" style="color: #FF4081;"></i>
+                        <div class="skill-name">UI/UX Design</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('UI/UX Design')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fab fa-bitcoin skill-icon" style="color: #F7931A;"></i>
+                        <div class="skill-name">Blockchain & Web3</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Blockchain & Web3')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-gamepad skill-icon" style="color: #673AB7;"></i>
+                        <div class="skill-name">Game Development</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Game Development')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-cubes skill-icon" style="color: #00BCD4;"></i>
+                        <div class="skill-name">Big Data Era</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Big Data Technologies')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-vial skill-icon" style="color: #8BC34A;"></i>
+                        <div class="skill-name">QA & Testing</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('QA & Software Testing')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-bullhorn skill-icon" style="color: #FF9800;"></i>
+                        <div class="skill-name">Digital Marketing</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Digital Marketing')">Enroll Now</button>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-robot skill-icon" style="color: #795548;"></i>
+                        <div class="skill-name">Robotics & IoT</div>
+                        <button class="btn-enroll" onclick="enrollInTopic('Robotics & IoT')">Enroll Now</button>
+                    </div>
+                </div>
+
+                <button class="carousel-btn next-btn" onclick="scrollSkills(1)"><i
+                        class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <h2 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                Enrolled Courses</h2>
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Course Cards injected here -->
+                <p style="color: #777;">Loading courses...</p>
+            </div>
+        </div>
+
+        <!-- Player View -->
+        <div id="view-player" class="view-section">
+            <button onclick="switchView('dashboard')"
+                style="background:none; border:none; color: #aaa; cursor:pointer; margin-bottom: 10px;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+
+            <h1 id="player-title" style="color: var(--neon-blue);">Course Title</h1>
+
+            <div class="player-container">
+                <!-- Syllabus Sidebar -->
+                <div class="player-sidebar" id="syllabus-container">
+                    <!-- Weeks/Days injected here -->
+                </div>
+
+                <!-- Content Area -->
+                <div class="player-content">
+                    <div id="content-loader" style="display:none; text-align: center; padding-top: 50px;">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--neon-blue);"></i>
+                        <p>ABHI is generating content...</p>
+                    </div>
+                    <div id="markdown-content" class="markdown-body">
+                        <!-- Content injected here -->
+                    </div>
+
+                    <div class="player-footer">
+                        <button id="btn-complete-day" class="btn-neon" style="background: var(--neon-green);"
+                            onclick="completeDay()">
+                            Mark Complete <i class="fas fa-check"></i>
+                        </button>
+                        <button id="btn-take-quiz" class="btn-neon"
+                            style="display:none; background: var(--neon-purple);" onclick="startQuiz()">
+                            Take Quiz <i class="fas fa-puzzle-piece"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="quiz-title" style="color: var(--neon-purple); text-align: center;">Weekly Assessment</h2>
+            <div id="quiz-questions"></div>
+            <button class="btn-neon" style="width: 100%; margin-top: 20px;" onclick="submitQuiz()">Submit
+                Answers</button>
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let currentCourseId = null;
+        let currentWeek = 1;
+        let currentDay = 1;
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', loadCourses);
+
+        // --- Dashboard Logic ---
+        async function loadCourses() {
+            const res = await fetch('/api/learn/courses');
+            const courses = await res.json();
+            const grid = document.getElementById('coursesGrid');
+            grid.innerHTML = '';
+
+            if (courses.length === 0) {
+                grid.innerHTML = '<p style="color:#777;">No courses yet. Create one above!</p>';
+                return;
+            }
+
+            courses.forEach(c => {
+                const syllabus = JSON.parse(c.syllabus_json);
+                const totalWeeks = syllabus.weeks.length;
+                const totalDays = totalWeeks * 5; // Approx
+
+                // Calculate progress roughly for now
+                // Need a better robust progress calc, but simple logic:
+                const progressPct = ((c.current_week - 1) * 5 + c.current_day) / totalDays * 100;
+
+                const card = `
+                    <div class="course-card">
+                        <div class="course-title">${c.topic}</div>
+                        <div style="font-size: 0.9rem; color: #aaa;">${syllabus.description || 'Custom AI Course'}</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${Math.min(progressPct, 100)}%"></div>
+                        </div>
+                        <button class="btn-continue" onclick="openCourse(${c.id})">Continue Learning</button>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        async function generateCourse() {
+            const topic = document.getElementById('topicInput').value;
+            if (!topic) return alert("Please enter a topic.");
+
+            const btn = document.querySelector('.create-course-box button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/learn/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic })
+                });
+                const data = await res.json();
+                if (data.id) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Failed to generate.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function enrollInTopic(topicName) {
+            // Re-use logic but for specific topic
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enrolling...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/learn/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topicName })
+                });
+                const data = await res.json();
+                if (data.id) {
+                    // Success animation or redirect? For now reload to show in My Courses
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Failed to enroll.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function scrollSkills(direction) {
+            const container = document.getElementById('skillsGrid');
+            const cardWidth = 220 + 20; // width + gap
+            const scrollAmount = cardWidth * 4; // Scroll 4 cards at a time as per request "visible 4"
+
+            if (direction === 1) {
+                container.scrollLeft += scrollAmount;
+            } else {
+                container.scrollLeft -= scrollAmount;
+            }
+        }
+        function switchView(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+            if (view === 'dashboard') loadCourses();
+        }
+
+        async function openCourse(id) {
+            currentCourseId = id;
+            switchView('player');
+            document.getElementById('markdown-content').innerHTML = '';
+            document.getElementById('syllabus-container').innerHTML = '<p>Loading...</p>';
+
+            const res = await fetch(`/api/learn/course/${id}`);
+            const course = await res.json();
+
+            document.getElementById('player-title').innerText = course.topic;
+            currentWeek = course.current_week;
+            currentDay = course.current_day;
+
+            renderSyllabus(course);
+            loadContent(currentWeek, currentDay, course.topic); // Load current progress
+        }
+
+        function renderSyllabus(course) {
+            const syllabus = JSON.parse(course.syllabus_json);
+            const container = document.getElementById('syllabus-container');
+            container.innerHTML = '';
+
+            const completedDays = JSON.parse(course.completed_days_json || '[]');
+
+            syllabus.weeks.forEach(week => {
+                const isLocked = week.week_number > course.current_week;
+                const weekHtml = `
+                    <div class="week-item">
+                        <div class="week-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                            Week ${week.week_number}: ${week.title}
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <ul class="day-list ${week.week_number === course.current_week ? 'open' : ''}">
+                            ${week.days.map(day => {
+                    const isDayLocked = isLocked || (week.week_number === course.current_week && day.day_number > course.current_day);
+                    const isCompleted = completedDays.includes(`${week.week_number}-${day.day_number}`);
+                    const isActive = week.week_number === currentWeek && day.day_number === currentDay;
+
+                    return `
+                                    <li class="day-item ${isActive ? 'active' : ''} ${isDayLocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}" 
+                                        onclick="${!isDayLocked ? `loadContent(${week.week_number}, ${day.day_number}, '${course.topic}', '${day.title}')` : ''}">
+                                        <span>Day ${day.day_number}: ${day.title}</span>
+                                        ${isCompleted ? '<i class="fas fa-check"></i>' : ''}
+                                    </li>
+                                `;
+                }).join('')}
+                            ${!isLocked ? `<li class="day-item" style="color:var(--neon-purple); justify-content:center;" onclick="startQuiz(${week.week_number}, ${week.days.length === 5})">
+                                <i class="fas fa-star"></i> Assessment
+                            </li>` : ''}
+                        </ul>
+                    </div>
+                `;
+                container.innerHTML += weekHtml;
+            });
+        }
+
+        async function loadContent(week, day, topic, title) {
+            currentWeek = week;
+            currentDay = day;
+
+            document.getElementById('content-loader').style.display = 'block';
+            document.getElementById('markdown-content').innerHTML = '';
+            document.getElementById('btn-take-quiz').style.display = 'none';
+            document.getElementById('btn-complete-day').style.display = 'block';
+
+            const res = await fetch(`/api/learn/course/${currentCourseId}/content?week=${week}&day=${day}&title=${encodeURIComponent(title || 'Lesson')}`);
+            const data = await res.json();
+
+            document.getElementById('content-loader').style.display = 'none';
+            document.getElementById('markdown-content').innerHTML = marked.parse(data.content);
+        }
+
+        async function completeDay() {
+            const res = await fetch(`/api/learn/course/${currentCourseId}/progress`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    week: currentWeek,
+                    // If more than 5 days, just increment. Simple logic: Day 5 -> Next Week (but locked by quiz)
+                    day: currentDay < 5 ? currentDay + 1 : currentDay,
+                    completed_days: [`${currentWeek}-${currentDay}`] // Backend should append
+                })
+            });
+
+            openCourse(currentCourseId); // Reload to update UI
+        }
+
+        // --- Quiz Logic ---
+        async function startQuiz(week, isLastDay) {
+            // For now, prompt for quiz
+            week = week || currentWeek;
+            const isFinal = week === 8; // Simulating final
+
+            document.getElementById('quiz-modal').style.display = 'flex';
+            document.getElementById('quiz-questions').innerHTML = '<p>Loading Assessment...</p>';
+
+            const res = await fetch(`/api/learn/course/${currentCourseId}/quiz?week=${week}&final=${isFinal}`);
+            const data = await res.json();
+
+            let html = '';
+            data.questions.forEach((q, idx) => {
+                html += `
+                <div class="question-card">
+                    <div class="question-text">${idx + 1}. ${q.text}</div>
+                    ${q.options ? q.options.map((opt, i) => `
+                        <label class="option-label">
+                            <input type="radio" name="q${q.id}" value="${i}" class="option-input">
+                            ${opt}
+                        </label>
+                    `).join('') : '<textarea placeholder="Write code here..." style="width:100%; height:100px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #555;"></textarea>'}
+                </div>
+               `;
+            });
+            document.getElementById('quiz-questions').innerHTML = html;
+        }
+
+        async function submitQuiz() {
+            // Simplified: Assume Pass
+            alert("Assessment Submitted! Analysis: PASS. Unlocking next module.");
+            document.getElementById('quiz-modal').style.display = 'none';
+
+            // Logic to unlock next week would go here
+            const res = await fetch(`/api/learn/course/${currentCourseId}/progress`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    week: currentWeek + 1, // Unlock next
+                    day: 1,
+                    completed_days: []
+                })
+            });
+            openCourse(currentCourseId);
+        }
+
+    </script>
+</body>
+
+</html>

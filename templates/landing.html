@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JYOMARG | The Future of Career Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Poppins:wght@300;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --neon-cyan: #00d4ff;
+            --neon-green: #00ff88;
+            --deep-space: #02050a;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            background: var(--deep-space);
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            /* స్క్రీన్ కదలదు */
+        }
+
+        /* High-Tech Animated Background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, transparent 0%, rgba(0, 212, 255, 0.1) 50%, transparent 100%);
+            position: absolute;
+            animation: scan 4s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes scan {
+            0% {
+                top: -100px;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Hero Container - Centralized */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* vertical alignment */
+            align-items: center;
+            /* horizontal alignment */
+            text-align: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .main-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 10vw, 7rem);
+            /* Responsive font size */
+            font-weight: 900;
+            letter-spacing: 15px;
+            margin: 0;
+            background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-15px) scale(1.02);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #ccd6f6;
+            max-width: 650px;
+            margin: 20px 0;
+            letter-spacing: 1px;
+            line-height: 1.6;
+            background: var(--glass);
+            padding: 15px 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            border-left: 3px solid var(--neon-cyan);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Massive Action Button - Repositioned */
+        .btn-portal {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: #000;
+            background: var(--neon-cyan);
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: 0.4s;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+            display: inline-block;
+        }
+
+        .btn-portal:hover {
+            transform: scale(1.1) skewX(-5deg);
+            background: var(--neon-green);
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
+        }
+
+        /* Core Features Display */
+        .features {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .f-card {
+            background: var(--glass);
+            padding: 15px 25px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            transition: 0.3s;
+            min-width: 150px;
+        }
+
+        .f-card:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 212, 255, 0.08);
+            transform: translateY(-5px);
+        }
+
+        .f-card i {
+            color: var(--neon-cyan);
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        /* Footer Label */
+        .power-label {
+            position: absolute;
+            bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <section class="hero">
+        <h1 class="main-title">JYOMARG</h1>
+
+        <p class="subtitle">
+            Experience the next generation of career development. Guided by <strong>ABHI AI</strong>,
+            bridging the gap to <strong>Cognizant Superset</strong> through elite tutoring and AI-architected resumes.
+        </p>
+
+        <a href="/login" class="btn-portal">ENTER PORTAL</a>
+
+        <div class="features">
+            <div class="f-card"><i class="fas fa-brain"></i><br>AI Tutor</div>
+            <div class="f-card"><i class="fas fa-file-contract"></i><br>Resume Architect</div>
+            <div class="f-card"><i class="fas fa-radar"></i><br>Skill Analyzer</div>
+        </div>
+
+        <div class="power-label">SYSTEM STATUS: POWERED BY GEMINI 3 FLASH</div>
+    </section>
+
+</body>
+
+</html>

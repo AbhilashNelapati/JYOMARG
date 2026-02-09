@@ -1,0 +1,141 @@
+## **JYOMARG: Project Ecosystem Structure**
+
+### **1. Core Architecture (The Skeleton)**
+
+ప్రాజెక్ట్ యొక్క ప్రధాన భాగాలు మరియు అవి ఒకదానితో ఒకటి ఎలా కనెక్ట్ అవుతాయో ఈ కింద చూడవచ్చు:
+
+* **User Interface (The Body):** HTML5, CSS3 మరియు JavaScriptతో రూపొందించబడిన ఫ్యూచరిస్టిక్ డార్క్ థీమ్.
+* **AI Engine (The Brain):** **Gemini 3 Flash Preview** మోడల్, ఇది విద్యార్థుల ప్రశ్నలకు లోతైన వివరణలు మరియు కోడింగ్ సొల్యూషన్స్ ఇస్తుంది.
+* **Backend (The Nervous System):** **FastAPI** సర్వర్, ఇది యూజర్ అభ్యర్థనలను AIకి పంపి సమాధానాలను వేగంగా తిరిగి ఇస్తుంది.
+* **Knowledge Base:** **GeeksforGeeks**, YouTube మరియు ఇతర ఎడ్యుకేషన్ సైట్ల నుండి సేకరించిన సమాచారం.
+
+---
+
+### **2. Detailed Page Structure (The Workflow)**
+
+#### **A. Navigation & Profile (Right Side Up)**
+
+* **User Profile:** టాప్ రైట్ కార్నర్‌లో విద్యార్థి ప్రొఫైల్ ఫోటో మరియు పేరు ఉంటాయి.
+* **Sidebar:** Dashboard, Course Scout, AI Resume, మరియు Skill Gap ఆప్షన్లు సులభంగా నావిగేట్ చేయడానికి వీలుగా ఉంటాయి.
+
+#### **B. AI Tutor Module (Updated Course Scout)**
+
+మీరు కోరిన కొత్త పద్ధతిలో ఇది పనిచేస్తుంది:
+
+1. **Direct Content Delivery:** మీరు ఏదైనా టాపిక్ (ఉదా: Array Rotation) అడిగితే, ABHI ఆ టాపిక్ యొక్క పూర్తి వివరణ, లాజిక్ మరియు కోడ్ ఉదాహరణలను అక్కడే చూపిస్తుంది.
+2. **Resource Sidebar:** నేర్చుకుంటున్న టాపిక్‌కి సంబంధించి మరిన్ని వివరాల కోసం **GeeksforGeeks** లేదా YouTube వీడియో లింక్స్‌ను విడిగా ప్రక్కన ఇస్తుంది.
+3. **Code Playground:** ఇచ్చిన కోడ్‌ను అక్కడే ప్రాక్టీస్ చేసేలా ఒక చిన్న కోడింగ్ విండో.
+
+#### **C. AI Resume Architect**
+
+* **Smart Automation:** విద్యార్థి నేర్చుకున్న కోర్సులను బట్టి ఆటోమేటిక్‌గా రెజ్యూమే బిల్డ్ అవుతుంది.
+* **Targeting:** **Cognizant Superset** వంటి పోర్టల్స్‌కు సరిపోయేలా స్కిల్స్ హైలైట్ చేస్తుంది.
+
+#### **D. Skill Gap Analyzer**
+
+* **Comparison:** ప్రస్తుత మార్కెట్ రిక్వైర్మెంట్స్‌కి మరియు విద్యార్థి నైపుణ్యానికి మధ్య ఉన్న తేడాను గ్రాఫ్స్ ద్వారా వివరిస్తుంది.
+
+---
+
+### **3. File & Directory Structure (The Implementation)**
+
+మీ ఫోల్డర్ లో ఫైల్స్ ఇలా అమర్చాలి:
+
+```text
+C:\Users\nelap\OneDrive\Desktop\JYOMARG\
+├── app.py                  # Main Server Logic
+├── abhi_ai.py              # AI Tutor & Assistant Logic (Brain)
+├── .env                    # API Key Storage
+├── requirements.txt        # Kavalsina Libraries
+├── static/                 # Styles, Scripts & Images
+│   ├── css/style.css       # Neon/Jarvis Theme
+│   ├── js/main.js          # Speech & Markdown Logic
+│   └── images/Avatar.png   # 3D Avatar for ABHI
+└── templates/              # Web Pages
+    ├── index.html          # Dashboard & Chat Area
+    ├── courses.html        # AI Tutor (Direct Content) Page
+    └── resume.html         # Resume Builder Page
+
+```
+
+---
+
+### **4. Summary of ABHI AI’s New Role**
+
+* **Phase 1 (Introduction):** "Hi, I am A.B.H.I..." అని పరిచయం చేసుకుంటుంది.
+* **Phase 2 (Content Delivery):** లింక్స్ మాత్రమే కాకుండా, పూర్తి కంటెంట్, కోడ్ మరియు లాజిక్‌ను వివరిస్తుంది.
+* **Phase 3 (Reference):** మరిన్ని వివరాల కోసం ఎక్స్టర్నల్ లింక్స్ (GFG, YouTube) ఇస్తుంది.
+* **Phase 4 (Voice):** కంటెంట్‌ను క్లుప్తంగా చదివి వినిపిస్తుంది.
+
+
+
+
+
+
+# **Project Report: JYOMARG Ecosystem**
+
+**Vision:** A Comprehensive AI-Driven Path from Learning to Placement.
+
+---
+
+## **1. Project Philosophy**
+
+**JYOMARG** (meaning "The Path of Light") is designed to be an end-to-end career portal. It moves beyond traditional search engines by providing a personalized learning environment where the **ABHI AI Assistant** serves as a mentor, tutor, and career architect.
+
+---
+
+## **2. System Architecture (The Flow)**
+
+### **Phase 1: Knowledge Discovery (The AI Tutor)**
+
+Instead of redirecting users to external sites immediately, ABHI now delivers content directly within the portal.
+
+* **Direct Content Delivery:** When a user asks for a topic (e.g., "Data Structures"), ABHI generates full explanations, logic, and code snippets directly on the screen.
+* **Segmented Resources:** To provide a deeper understanding, ABHI provides categorized external links (GeeksforGeeks for practice, YouTube for visuals) in a separate "Deep Dive" section.
+* **Voice Summarization:** While the screen shows detailed technical content, ABHI provides a concise vocal summary to maintain user engagement.
+
+### **Phase 2: Skill Validation (Gap Analysis)**
+
+* **Comparison Engine:** The system compares the user's learned skills against real-world job descriptions.
+* **Visual Feedback:** Uses Radar/Spider charts to show exactly where the student needs to improve to meet industry standards.
+
+### **Phase 3: Career Preparation (AI Resume Architect)**
+
+* **Smart Building:** Automatically compiles a resume based on the courses completed and skills verified within JYOMARG.
+* **Strategic Optimization:** Tailors the resume specifically for portals like **Cognizant Superset** by highlighting the most relevant projects and keywords.
+
+---
+
+## **3. Technical File Structure**
+
+Based on your local setup (`C:\Users\nelap\OneDrive\Desktop\JYOMARG\ABHI`), the organized structure is as follows:
+
+```text
+JYOMARG/
+├── app.py                  # FastAPI Backend (Routes & Server)
+├── abhi_ai.py              # Gemini 3 Logic (The AI Tutor Engine)
+├── .env                    # Secure API Key Storage
+├── requirements.txt        # Project Dependencies
+│
+├── templates/              # Frontend HTML (The Portal)
+│   ├── index.html          # Dashboard & Central Chat
+│   ├── courses.html        # AI Tutor Page (Direct Content Area)
+│   └── resume.html         # AI Resume Builder Interface
+│
+└── static/                 # Assets & Styling
+    ├── css/style.css       # Jarvis-themed Neon Dark UI
+    ├── js/main.js          # Speech & Markdown Processing Logic
+    └── images/             # ABHI Avatar and User Profile Icons
+
+```
+
+---
+
+## **4. The User Journey Map**
+
+1. **Introduction:** User greets ABHI; ABHI introduces itself as the assistant for Project JYOMARG.
+2. **Learning:** User requests a topic. ABHI teaches the concept, provides code, and lists reference links.
+3. **Assessment:** User checks their progress through the Skill Gap Analyzer.
+4. **Application:** User generates an optimized resume via the AI Resume Architect.
+
+---

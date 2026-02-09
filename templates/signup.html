@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | JYOMARG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-blue: #00d4ff;
+            --neon-green: #2bff88;
+            --dark-bg: #02050a;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--dark-bg);
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+
+        .bg-animate {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #001a24 0%, #02050a 100%);
+            z-index: -1;
+        }
+
+        .signup-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            width: 450px;
+            text-align: center;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .subtitle {
+            color: var(--neon-blue);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            opacity: 0.8;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 38px;
+            color: var(--neon-blue);
+        }
+
+        label {
+            color: #fff;
+            font-size: 0.85rem;
+            margin-left: 5px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        /* Password Requirements Box */
+        .rules-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .rules-box p {
+            margin: 0 0 8px 0;
+            color: var(--neon-blue);
+            font-weight: bold;
+        }
+
+        .rule {
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .rule.valid {
+            color: var(--neon-green);
+        }
+
+        .rule.valid i {
+            color: var(--neon-green);
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-signup:hover {
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+            transform: scale(1.02);
+            background: var(--neon-green);
+        }
+
+        .login-link {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .login-link a {
+            color: var(--neon-blue);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-animate"></div>
+
+    <div class="signup-card">
+        <h2>JOIN JYOMARG</h2>
+        <div class="subtitle">Enroll in the AI Career Portal</div>
+
+        <form action="/auth/signup" method="POST" onsubmit="return validateForm()">
+            <div class="input-group">
+                <label>Full Name</label>
+                <i class="fas fa-user"></i>
+                <input type="text" name="full_name" placeholder="E.g. Nelaprolu Abhi" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Create Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="psw" placeholder="••••••••" onkeyup="checkPassword()"
+                    required>
+            </div>
+
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" name="confirm_password" id="confirm_psw" placeholder="••••••••"
+                    onkeyup="checkPasswordMatch()" required>
+                <span id="match-message" style="font-size: 0.8rem; margin-left: 5px;"></span>
+            </div>
+
+            <div class="rules-box">
+                <p>Security Requirements:</p>
+                <div id="len" class="rule"><i class="far fa-circle"></i> At least 8 characters</div>
+                <div id="cap" class="rule"><i class="far fa-circle"></i> One capital letter</div>
+                <div id="num" class="rule"><i class="far fa-circle"></i> One number (0-9)</div>
+                <div id="sym" class="rule"><i class="far fa-circle"></i> One special symbol (@, #, $)</div>
+            </div>
+
+            <button type="submit" class="btn-signup">Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/login">Login Here</a>
+        </div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const psw = document.getElementById('psw').value;
+
+            // Validate Length
+            updateRule('len', psw.length >= 8);
+            // Validate Capital
+            updateRule('cap', /[A-Z]/.test(psw));
+            // Validate Number
+            updateRule('num', /[0-9]/.test(psw));
+            // Validate Symbol
+            updateRule('sym', /[!@#$%^&*(),.?":{}|<>]/.test(psw));
+
+            checkPasswordMatch();
+        }
+
+        function checkPasswordMatch() {
+            const psw = document.getElementById('psw').value;
+            const confirmPsw = document.getElementById('confirm_psw').value;
+            const message = document.getElementById('match-message');
+
+            if (confirmPsw.length > 0) {
+                if (psw === confirmPsw) {
+                    message.style.color = 'var(--neon-green)';
+                    message.innerText = 'Passwords match';
+                } else {
+                    message.style.color = 'red';
+                    message.innerText = 'Passwords do not match';
+                }
+            } else {
+                message.innerText = '';
+            }
+        }
+
+        function updateRule(id, isValid) {
+            const element = document.getElementById(id);
+            if (isValid) {
+                element.classList.add('valid');
+                element.querySelector('i').classList.replace('fa-circle', 'fa-check-circle');
+            } else {
+                element.classList.remove('valid');
+                element.querySelector('i').classList.replace('fa-check-circle', 'fa-circle');
+            }
+        }
+
+        function validateForm() {
+            const rules = document.querySelectorAll('.rule');
+            let allValid = true;
+            rules.forEach(r => { if (!r.classList.contains('valid')) allValid = false; });
+
+            if (!allValid) {
+                alert("Please meet all password requirements before submitting.");
+                return false;
+            }
+
+            const psw = document.getElementById('psw').value;
+            const confirmPsw = document.getElementById('confirm_psw').value;
+
+            if (psw !== confirmPsw) {
+                alert("Passwords do not match!");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+
+</html>
