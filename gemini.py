@@ -1,7 +1,7 @@
 import google.generativeai as genai
 
 # మీ Gemini API key ఇక్కడ పెట్టండి
-genai.configure(api_key="AIzaSyBaiiDlkgofDurGYHDz2zjttoGL7gvG0OQ")
+genai.configure(api_key="your api key")
 
 print("Available Gemini Models:\n")
 
