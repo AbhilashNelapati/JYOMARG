@@ -19,90 +19,98 @@ class ABHIAssistant:
         # Initialize the new GenAI client
         self.client = genai.Client(api_key=api_key or "DUMMY_KEY")
         
-        self.instruction = (
-            "You are ABHI (Artificial Being for Human Intelligence), the dual-role AI Tutor and Career Assistant for Project JYOMARG.\n\n"
-            "ROLE 1: CAREER ASSISTANT (Old Features)\n"
-            "- Help with course discovery and job portals.\n"
-            "- Provide recommendations in Markdown Tables.\n\n"
-            "ROLE 2: AI TUTOR (New Features)\n"
-            "- Explain topics (e.g., 'What is Recursion?') directly in chat.\n"
-            "- Format with bold headers and code blocks.\n\n"
-            "ROADMAP GENERATION:\n"
-            "- When asked for a roadmap, strictly follow the Phase -> Week -> Day -> Topics hierarchy.\n"
-        )
-        
-        
-        # Using Gemini 1.5 Flash (New SDK format: no 'models/' prefix)
-        self.model_name = "gemini-1.5-flash"
-        if not api_key or api_key == "DUMMY_KEY":
-            print("[CRITICAL] API Key is NOT being read correctly on server!")
-        print(f"[SYSTEM] AI Model set to: {self.model_name}")
-        
-
-    def _get_json_response(self, prompt):
-        """Helper to get clean JSON from AI. Robust version with Logging."""
-        
-        def log_debug(msg):
-            try:
-                with open("debug_ai.log", "a", encoding="utf-8") as f:
-                    f.write(f"{msg}\n")
-            except:
-                pass 
+        # --- ROBUST MODEL SELECTION ---
+        # Instead of hardcoding, we will try to find the best available model
+        self.model_name = "gemini-1.5-flash" # Default fallback
         
         try:
-            log_debug(f"Generating for prompt: {prompt[:100]}...")
+            # Check if API Key is actually there
+            if not api_key or len(api_key) < 10:
+                print("[CRITICAL] GOOGLE_API_KEY is invalid or missing!")
             
-            # Request using new API
-            try:
-                response = self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=prompt,
-                    config=genai.types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        max_output_tokens=40000,  # Significantly increased for deep roadmaps
-                        system_instruction=self.instruction
-                    )
+            # List available models to find what this key can actually use
+            # This prevents "Model Not Found" 404 errors
+            print("[SYSTEM] Discovering available models...")
+            available_models = []
+            for model in self.client.models.list():
+                # We want gemini models that support generation
+                if "gemini" in model.name.lower() and "generateContent" in model.supported_generation_methods:
+                    # Clean the name (remove 'models/' if present)
+                    clean_name = model.name.replace("models/", "")
+                    available_models.append(clean_name)
+            
+            print(f"[SYSTEM] Found models: {available_models}")
+            
+            # Priority list for selection
+            priorities = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+            for p in priorities:
+                if p in available_models:
+                    self.model_name = p
+                    break
+            else:
+                if available_models:
+                    self.model_name = available_models[0]
+                    
+            print(f"[SYSTEM] Selected best working model: {self.model_name}")
+            
+        except Exception as e:
+            print(f"[CRITICAL] Model discovery failed: {e}")
+            print(f"[SYSTEM] Falling back to hardcoded model: {self.model_name}")
+
+        self.instruction = (
+            "You are ABHI (Artificial Being for Human Intelligence), the dual-role AI Tutor and Career Assistant for Project JYOMARG.\n\n"
+            "ROLE 1: CAREER ASSISTANT\n"
+            "- Help with course discovery and job portals.\n"
+            "ROLE 2: AI TUTOR\n"
+            "- Explain topics directly in chat with bold headers.\n"
+        )
+
+    def _get_json_response(self, prompt):
+        """Helper to get clean JSON from AI. Robust version with fallback."""
+        try:
+            # Attempt with the auto-discovered model
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    max_output_tokens=10000,
+                    system_instruction=self.instruction
                 )
-            except Exception as outer_e:
-                err_str = str(outer_e)
-                # If model not found or quota exceeded, attempt fallback
-                if any(x in err_str.lower() for x in ["429", "quota", "404", "not_found", "not found"]):
-                    log_debug(f"PRIMARY FAILED ({err_str[:50]}). Attempting fallback to gemini-1.5-flash...")
-                    response = self.client.models.generate_content(
-                        model="models/gemini-1.5-flash",
-                        contents=prompt,
-                        config=genai.types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            max_output_tokens=40000,
-                            system_instruction=self.instruction
-                        )
-                    )
-                else:
-                    raise outer_e
-
+            )
             raw_text = response.text.strip()
-            log_debug(f"RAW RESP: {raw_text[:200]}")
-
-            # Cleanup
+            
+            # Cleanup Markdown backticks if AI adds them
             clean_json = raw_text
             if "```" in clean_json:
                 match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", clean_json, re.DOTALL | re.IGNORECASE)
-                if match:
-                    clean_json = match.group(1)
+                if match: clean_json = match.group(1)
             
-            clean_json = clean_json.strip()
-            
-            # Validate
-            json.loads(clean_json)
-            return clean_json
+            # Validate JSON
+            json.loads(clean_json.strip())
+            return clean_json.strip()
 
         except Exception as e:
-            log_debug(f"CRITICAL ERROR: {e}")
+            print(f"[ERROR] AI Logic Failed for {self.model_name}: {e}")
+            # Final Fallback Attempt with gemini-1.5-flash (Standard)
+            if self.model_name != "gemini-1.5-flash":
+                try:
+                    print("[SYSTEM] Attempting final fallback to gemini-1.5-flash...")
+                    response = self.client.models.generate_content(
+                        model="gemini-1.5-flash",
+                        contents=prompt,
+                        config=genai.types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            system_instruction=self.instruction
+                        )
+                    )
+                    return response.text.strip()
+                except:
+                    pass
+            
             err_str = str(e)
             if "429" in err_str or "quota" in err_str.lower():
-                return '{"error": "AI Quota Exceeded on all models. Please wait 1 minute and retry."}'
-            if "404" in err_str:
-                return f'{{"error": "Model Error: {self.model_name} not found. Please check API access."}}'
+                return '{"error": "AI Quota Exceeded. Please wait 1 minute."}'
             return f'{{"error": "AI Error: {err_str[:100]}..."}}'
     
     def analyze_skill_gap(self, resume_text, jd_text):
