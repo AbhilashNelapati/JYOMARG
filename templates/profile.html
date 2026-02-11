@@ -716,6 +716,36 @@
             background: var(--primary-neon);
             color: #000;
         }
+
+        .hidden-job {
+            display: none !important;
+        }
+
+        .load-more-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        #btn-load-more {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            color: var(--primary-neon);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        #btn-load-more:hover {
+            background: var(--primary-neon);
+            color: #000;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 
@@ -914,23 +944,45 @@
                 <div class="section-card" id="section-jobs">
                     <div class="section-title">
                         <span><i class="fas fa-bullseye"></i> AI Recommended Jobs</span>
-                        <span
-                            style="font-size: 0.8rem; background: var(--primary-neon); color: #000; padding: 2px 8px; border-radius: 4px;">Based
-                            on Active Resume</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" class="btn-edit" id="refresh-jobs-btn" onclick="refreshProfileJobs()">
+                                <i class="fas fa-sync-alt"></i> Refresh Recommendations
+                            </button>
+                            <span
+                                style="font-size: 0.8rem; background: var(--primary-neon); color: #000; padding: 2px 8px; border-radius: 4px;">Based
+                                on Active Resume</span>
+                        </div>
                     </div>
 
-                    <div class="job-grid">
+                    <div class="job-grid" id="profile-job-grid">
                         {% if notifications %}
                         {% for job in notifications %}
-                        <div class="job-card">
+                        <div class="job-card {{ 'hidden-job' if loop.index > 3 else '' }}" id="profile-job-{{ job.id }}"
+                            style="position: relative; transition: all 0.4s ease;">
                             <div class="job-header">
                                 <h3 class="job-title">{{ job.job_title }}</h3>
-                                <span class="match-badge">{{ job.match_score }}% Match</span>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <span class="match-badge">{{ job.match_score }}% Match</span>
+                                    <button type="button" class="btn-action delete"
+                                        onclick="deleteProfileNotif({{ job.id }})"
+                                        style="opacity: 0.5; font-size: 0.8rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="job-company">{{ job.company }}</div>
                             <p class="job-reason">{{ job.reason }}</p>
-                            <a href="{{ job.apply_link }}" target="_blank" class="btn-apply">Apply Now <i
-                                    class="fas fa-external-link-alt"></i></a>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 0.75rem; color: #666;"><i class="fas fa-calendar-alt"></i>
+                                    Found: {{ job.created_at[:10] }}</span>
+                                {% if not job.is_read %}
+                                <span
+                                    style="font-size: 0.65rem; color: var(--accent-danger); border: 1px solid var(--accent-danger); padding: 1px 4px; border-radius: 3px;">NEW</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ job.apply_link }}" target="_blank" class="btn-apply"
+                                onclick="markRead({{ job.id }})">Apply Now <i class="fas fa-external-link-alt"></i></a>
                         </div>
                         {% endfor %}
                         {% else %}
@@ -940,6 +992,15 @@
                         </div>
                         {% endif %}
                     </div>
+
+                    {% if notifications|length > 3 %}
+                    <div class="load-more-container" id="load-more-container">
+                        <button type="button" id="btn-load-more" onclick="loadMoreJobs()" title="Load more jobs">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <p style="font-size: 0.7rem; color: #555; margin-top: 5px;">Show More Recommendations</p>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Section 3: Education -->
@@ -1151,6 +1212,91 @@
                     statusDiv.innerHTML = '';
                 }
             } catch (e) { console.error(e); }
+        }
+
+        async function refreshProfileJobs() {
+            const btn = document.getElementById('refresh-jobs-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning Neural Link...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/notifications/search', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Neural Network Scan Complete: " + result.message);
+                    location.reload(); // Reload to show new jobs
+                } else {
+                    alert("Analysis Failed: " + result.error);
+                }
+            } catch (error) {
+                console.error("Refresh Error:", error);
+                alert("Connection Interrupted.");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        async function markRead(id) {
+            fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+        }
+
+        async function deleteProfileNotif(id) {
+            if (!confirm("Remove this job recommendation?")) return;
+            try {
+                const res = await fetch('/api/notifications/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                if (res.ok) {
+                    const el = document.getElementById(`profile-job-${id}`);
+                    el.style.opacity = '0';
+                    el.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        el.remove();
+                        // Reveal one hidden job to keep balance if available
+                        const hidden = document.querySelectorAll('.job-card.hidden-job');
+                        if (hidden.length > 0) {
+                            hidden[0].classList.remove('hidden-job');
+                        }
+                        // Refresh button visibility
+                        if (document.querySelectorAll('.job-card.hidden-job').length === 0) {
+                            const btn = document.getElementById('load-more-container');
+                            if (btn) btn.style.display = 'none';
+                        }
+                    }, 400);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function loadMoreJobs() {
+            const hiddenJobs = document.querySelectorAll('.job-card.hidden-job');
+            const batchSize = 3;
+
+            for (let i = 0; i < batchSize && i < hiddenJobs.length; i++) {
+                hiddenJobs[i].classList.remove('hidden-job');
+                anime({
+                    targets: hiddenJobs[i],
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    easing: 'easeOutQuad',
+                    duration: 500
+                });
+            }
+
+            if (document.querySelectorAll('.job-card.hidden-job').length === 0) {
+                const container = document.getElementById('load-more-container');
+                if (container) container.style.display = 'none';
+            }
         }
     </script>
 

@@ -331,7 +331,7 @@ def add_notification(user_email, job_title, company, match_score, reason, apply_
         print(f"DB Error (add_notification): {e}")
         return False
 
-def get_notifications(user_email, limit=5):
+def get_notifications(user_email, limit=20):
     """Retrieves recent notifications for a user."""
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
@@ -353,6 +353,19 @@ def mark_notifications_read(user_email):
     cursor.execute("UPDATE notifications SET is_read = 1 WHERE user_email = ?", (user_email,))
     conn.commit()
     conn.close()
+
+def delete_notification(notif_id, user_email):
+    """Deletes a specific notification."""
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM notifications WHERE id=? AND user_email=?", (notif_id, user_email))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"DB Error (delete_notification): {e}")
+        return False
 
 # --- LEARN Feature Functions ---
 

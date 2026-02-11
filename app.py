@@ -147,13 +147,28 @@ async def trigger_search_custom(request: Request):
         if active_text:
              user_profile_dict['resume_text'] = active_text
              
-        alerts_json = abhi.generate_job_alerts(user_profile_dict)
-        alerts = json.loads(alerts_json)
+        alerts_raw = abhi.generate_job_alerts(user_profile_dict)
+        alerts_data = json.loads(alerts_raw)
         
+        if "error" in alerts_data:
+            return JSONResponse({"error": alerts_data["error"]}, status_code=500)
+            
+        jobs = alerts_data.get("jobs", [])
+        if not isinstance(jobs, list):
+            return JSONResponse({"error": "Invalid AI response structure"}, status_code=500)
+            
         count = 0
-        for alert in alerts:
-            add_notification(email, alert.get("job_title"), alert.get("company"), alert.get("match_score"), alert.get("reason"), alert.get("apply_link"))
-            count += 1
+        for job in jobs:
+            if isinstance(job, dict):
+                add_notification(
+                    email, 
+                    job.get("job_title", "Unknown Role"), 
+                    job.get("company", "Unknown Company"), 
+                    job.get("match_score", 0), 
+                    job.get("reason", ""), 
+                    job.get("apply_link", "#")
+                )
+                count += 1
             
         return JSONResponse({"message": f"Search complete. Found {count} new jobs."})
     except Exception as e:
@@ -447,6 +462,7 @@ async def get_notifications_api(request: Request):
     notif_list = []
     for n in notifications:
         notif_list.append({
+            "id": n["id"],
             "job_title": n["job_title"],
             "company": n["company"],
             "match_score": n["match_score"],
@@ -458,12 +474,43 @@ async def get_notifications_api(request: Request):
         
     return JSONResponse({"notifications": notif_list})
 
-@app.post("/api/notifications/read")
-async def mark_read_api(request: Request):
+@app.post("/api/notifications/read-all")
+async def mark_read_all_api(request: Request):
     user_session = request.session.get("user")
     if user_session:
         mark_notifications_read(user_session["email"])
-    return JSONResponse({"status": "success"})
+    return JSONResponse({"status": "ok"})
+
+@app.post("/api/notifications/read")
+async def mark_notif_read_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    notif_id = data.get("id")
+    
+    import sqlite3
+    from database import DB_NAME
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_email = ?", (notif_id, user_session["email"]))
+    conn.commit()
+    conn.close()
+    
+    return JSONResponse({"status": "ok"})
+
+@app.post("/api/notifications/delete")
+async def delete_notif_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    notif_id = data.get("id")
+    
+    from database import delete_notification
+    if delete_notification(notif_id, user_session["email"]):
+        return JSONResponse({"status": "ok"})
+    return JSONResponse({"error": "Failed to delete"}, status_code=500)
 
 @app.post("/analyze-gap")
 async def analyze_gap_endpoint(data: dict = Body(...)):
@@ -591,7 +638,8 @@ async def submit_quiz_api(request: Request, course_id: int):
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9000))  
-    print(f"🚀 Starting Production Server on port {port}...")
-    # Use app object directly to avoid double import overhead
+    print(f"🚀 Starting Server on http://127.0.0.1:{port} with Auto-Reload...")
+    # Use reload=True so changes in abhi_ai.py are picked up instantly
+    #uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True)
     uvicorn.run(app, host="0.0.0.0", port=port)
 

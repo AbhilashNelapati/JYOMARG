@@ -494,6 +494,8 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
+            z-index: 2000;
+            /* Ensure header is above the content grid */
         }
 
         .welcome-header h1 {
@@ -541,15 +543,17 @@
             position: absolute;
             top: 60px;
             right: 0;
-            width: 320px;
-            background: rgba(10, 10, 25, 0.95);
-            border: 1px solid rgba(0, 243, 255, 0.3);
+            width: 360px;
+            background: #000000 !important;
+            /* Solid black to prevent any transparency */
+            opacity: 1 !important;
+            border: 1px solid var(--neon-blue);
             border-radius: 12px;
-            backdrop-filter: blur(15px);
-            z-index: 2000;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 1), 0 0 30px rgba(0, 243, 255, 0.2);
+            z-index: 9999;
+            /* Highest possible */
             overflow: hidden;
-            animation: slideDown 0.3s ease-out;
+            animation: slideDown 0.3s ease-out-back;
         }
 
         @keyframes slideDown {
@@ -601,12 +605,19 @@
         .notif-item {
             padding: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: 0.2s;
+            transition: all 0.2s;
             cursor: pointer;
+            position: relative;
         }
 
         .notif-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 243, 255, 0.1);
+            padding-left: 20px;
+            /* Slide effect on hover */
+        }
+
+        .notif-item:hover .notif-title {
+            color: var(--neon-blue);
         }
 
         .notif-title {
@@ -625,6 +636,42 @@
             font-size: 0.75rem;
             color: var(--accent-success);
             margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notif-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--accent-danger);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-danger);
+        }
+
+        .btn-notif-del {
+            background: transparent;
+            border: none;
+            color: #555;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .btn-notif-del:hover {
+            color: var(--accent-danger);
+        }
+
+        .notif-date {
+            font-size: 0.7rem;
+            color: #666;
+            font-style: italic;
         }
 
         .notif-footer {
@@ -1021,19 +1068,35 @@
                 const badge = document.getElementById('notif-badge');
 
                 if (data.notifications && data.notifications.length > 0) {
-                    badge.style.display = 'block';
+                    // Red dot logic: only show if at least one is unread
+                    const hasUnread = data.notifications.some(n => !n.is_read);
+                    badge.style.display = hasUnread ? 'block' : 'none';
+
                     list.innerHTML = '';
 
-                    data.notifications.slice(0, 3).forEach(n => {
+                    data.notifications.slice(0, 5).forEach(n => {
                         const item = document.createElement('div');
-                        item.className = 'notif-item';
+                        item.className = `notif-item ${!n.is_read ? 'unread' : ''}`;
+                        const dateStr = new Date(n.created_at).toLocaleDateString();
                         item.innerHTML = `
-                            <div class="notif-title">${n.job_title}</div>
-                            <div class="notif-company">${n.company}</div>
-                            <div class="notif-score"><i class="fas fa-check-circle"></i> ${n.match_score}% Match</div>
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <div class="notif-title">${n.job_title}</div>
+                                    <div class="notif-company">${n.company}</div>
+                                </div>
+                                <button class="btn-notif-del" onclick="deleteNotif(event, ${n.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="notif-score">
+                                <span><i class="fas fa-check-circle"></i> ${n.match_score}% Match</span>
+                                <span class="notif-date">${dateStr}</span>
+                            </div>
                         `;
-                        // Store full object in click handler
-                        item.onclick = () => openJobModal(n);
+                        item.onclick = () => {
+                            markRead(n.id);
+                            window.open(n.apply_link, '_blank');
+                        };
                         list.appendChild(item);
                     });
                 } else {
@@ -1043,6 +1106,29 @@
             } catch (e) {
                 console.error("Notif Error:", e);
             }
+        }
+
+        async function markRead(id) {
+            await fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            fetchNotifications(); // Refresh UI
+        }
+
+        async function deleteNotif(event, id) {
+            if (event) event.stopPropagation();
+            if (!confirm("Remove this alert?")) return;
+
+            try {
+                const res = await fetch('/api/notifications/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                if (res.ok) fetchNotifications();
+            } catch (e) { console.error(e); }
         }
 
         function toggleNotifications() {
@@ -1062,6 +1148,33 @@
 
         function closeJobModal() {
             document.getElementById('job-modal').style.display = 'none';
+        }
+
+        async function searchJobs(event) {
+            if (event) event.stopPropagation(); // Don't close popup
+            const btn = document.querySelector('.btn-search-sm');
+            if (!btn) return;
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/notifications/search', { method: 'POST' });
+                const data = await res.json();
+                if (data.error) {
+                    alert("System Logic Failed: " + data.error);
+                } else {
+                    // Update the list after search
+                    await fetchNotifications();
+                    alert("Neural Network Scan Complete: " + data.message);
+                }
+            } catch (e) {
+                alert("Neural Link Interrupted during search.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         // Close modal if clicked outside

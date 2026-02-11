@@ -12,71 +12,77 @@ class ABHIAssistant:
         if not api_key:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
-        genai.configure(api_key=api_key or "DUMMY_KEY")
-        
-        # --- AUTO MODEL SELECTION ---
-        self.model_name = "gemini-pro" # Standard fallback
-        try:
-            # We list models and find one that supports 'generateContent'
-            available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            print(f"[SYSTEM] Available models: {available}")
-            
-            # Prefer flash if available, otherwise pro
-            if any("gemini-1.5-flash" in m for m in available):
-                self.model_name = [m for m in available if "gemini-1.5-flash" in m][0]
-            elif any("gemini-pro" in m for m in available):
-                self.model_name = [m for m in available if "gemini-pro" in m][0]
-            elif available:
-                self.model_name = available[0]
-                
-        except Exception as e:
-            print(f"[SYSTEM] Discovery failed, using default: {e}")
-
+        # Using gemini-2.5-flash which is available and stable
+        self.model_name = "gemini-2.5-flash"
         self.model = genai.GenerativeModel(model_name=self.model_name)
+        
         print(f"[SYSTEM] AI Initialized with {self.model_name}")
 
     def _get_json_response(self, prompt):
         import time
-        max_retries = 1
-        
-        for attempt in range(max_retries + 1):
+        for attempt in range(2): # Try 2 times
             try:
-                # Adding explicit system instruction to the prompt since some older models need it there
-                full_prompt = f"SYSTEM: You are ABHI AI. Always output valid JSON.\nUSER: {prompt}"
+                full_prompt = f"SYSTEM: You are ABHI AI. You MUST output ONLY valid JSON. No conversational text.\nUSER: {prompt}"
                 response = self.model.generate_content(full_prompt)
-                raw_text = response.text.strip()
                 
+                if not response or not hasattr(response, 'text'):
+                    raise Exception("Empty response")
+                
+                raw_text = response.text.strip()
                 clean_json = raw_text
+                
+                # Extract JSON block (supports { } and [ ])
                 if "```" in clean_json:
-                    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", clean_json, re.DOTALL | re.IGNORECASE)
-                    if match: clean_json = match.group(1)
+                    match = re.search(r"```(?:json)?\s*([\{\[].*?[\}\]])\s*```", clean_json, re.DOTALL | re.IGNORECASE)
+                    if match: 
+                        clean_json = match.group(1)
+                    else:
+                        # Fallback: find first { or [ and last } or ]
+                        start_obj = clean_json.find('{')
+                        start_list = clean_json.find('[')
+                        start = min(start_obj, start_list) if (start_obj != -1 and start_list != -1) else max(start_obj, start_list)
+                        
+                        end_obj = clean_json.rfind('}')
+                        end_list = clean_json.rfind(']')
+                        end = max(end_obj, end_list)
+                        
+                        if start != -1 and end != -1:
+                            clean_json = clean_json[start:end+1]
                 
                 json.loads(clean_json.strip())
                 return clean_json.strip()
+                
             except Exception as e:
-                print(f"[ERROR] AI Attempt {attempt + 1} Failed ({self.model_name}): {e}")
-                if attempt == max_retries:
-                    return f'{{"error": "AI Logic Failed: {str(e)[:100]}"}}'
-                time.sleep(1) # Small delay before retry
+                if "429" in str(e) and attempt == 0:
+                    print("[SYSTEM] Quota hit, retrying in 2s...")
+                    time.sleep(2)
+                    continue
+                print(f"[ERROR] AI Failed: {str(e)}")
+                return json.dumps({"error": str(e)})
 
     def analyze_skill_gap(self, resume_text, jd_text):
         prompt = f"Analyze Resume vs JD. Output JSON: {{'match_score': 0..100, 'skill_scores': {{}}, 'missing_skills': [], 'advice': ''}}"
         return self._get_json_response(prompt)
 
     def ask_abhi(self, user_input):
-        prompt = f"User Query: {user_input}. Output JSON: {{'spoken_summary': '', 'display_content': ''}}"
+        prompt = (
+            f"You are ABHI AI, a helpful career assistant. "
+            f"User asked: '{user_input}'. "
+            f"Provide a friendly, useful response. "
+            f"Output as JSON with keys: 'spoken_summary' (short summary) and 'display_content' (detailed markdown)."
+        )
         return self._get_json_response(prompt)
 
     def generate_job_alerts(self, user_profile):
-        prompt = f"Generate 3 job alerts list in JSON format for: {user_profile}."
+        prompt = f"Based on this profile: {user_profile}, generate 3 realistic job alerts. Output ONLY as JSON: {{'jobs': [{{'job_title': '', 'company': '', 'match_score': 0-100, 'reason': '', 'apply_link': ''}}]}}"
         return self._get_json_response(prompt)
 
     def generate_course_syllabus(self, topic):
-        prompt = f"Generate syllabus for {topic} in JSON format."
+        prompt = f"Generate a week-wise syllabus for {topic}. Output ONLY as JSON: {{'course_title': '', 'description': '', 'weeks': [{{'week_number': 1, 'title': '', 'days': [{{'day_number': 1, 'title': ''}}]}}]}}"
         return self._get_json_response(prompt)
 
     def generate_day_content(self, topic, day_title):
-        prompt = f"Detailed Markdown tutorial for {topic} - {day_title}."
+        prompt = f"Write a detailed professional markdown guide for {topic}: {day_title}. Focus on practical examples."
         try:
             response = self.model.generate_content(prompt)
             return response.text.strip()
@@ -84,9 +90,19 @@ class ABHIAssistant:
             return "Error generating content."
 
     def generate_assessment(self, topic, week_number, is_final=False):
-        prompt = f"Generate quiz JSON for {topic}."
+        prompt = f"Generate 5 MCQs for {topic} Week {week_number}. Output ONLY as JSON: {{'questions': [{{'id': 1, 'question': '', 'options': ['', '', '', ''], 'answer': ''}}]}}"
         return self._get_json_response(prompt)
 
     def generate_career_roadmap(self, domain):
-        prompt = f"Generate a deep 6-phase technical roadmap for {domain} in JSON format."
+        prompt = (
+            f"Generate a minimalist professional roadmap for {domain}. "
+            f"STRICT RULES: "
+            f"1. PHASE Title: Max 3 words. "
+            f"2. WEEK Title: Max 4 words. "
+            f"3. DAY: Max 1 topic per day. "
+            f"4. EXPLANATION: Exactly one short sentence. "
+            f"5. PRACTICE: One short action. "
+            f"JSON: {{'title': '{domain}', 'phases': [{{'phase_num': 1, 'phase_name': '', 'weeks': [{{'week_number': 1, 'week_title': '', 'days': [{{'day_number': 1, 'topics': [{{'topic_name': '', 'explanation': '', 'practice': ''}}]}}]}}]}}]}} "
+            f"RULE: Global day numbering. Output ONLY JSON."
+        )
         return self._get_json_response(prompt)
