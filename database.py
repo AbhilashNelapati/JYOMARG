@@ -1,36 +1,48 @@
 import sqlite3
 
-DB_NAME = "users.db"
+import os
+import sqlite3
+
+# Vercel filesystem is read-only, we must use /tmp for SQLite
+if os.environ.get("VERCEL"):
+    DB_NAME = "/tmp/users.db"
+    print(f"[DB] Running on Vercel, using {DB_NAME}")
+else:
+    DB_NAME = "users.db"
 
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            phone TEXT,
-            location TEXT,
-            bio TEXT,
-            linkedin TEXT,
-            github TEXT,
-            skills TEXT,
-            experience_years TEXT,
-            degree TEXT,
-            university TEXT,
-            grad_year TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-    create_notifications_table()
-    create_resumes_table()
-    create_learn_tables()
-    migrate_notifications_schema()
-    migrate_users_schema()
-    create_roadmaps_table()
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                full_name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                phone TEXT,
+                location TEXT,
+                bio TEXT,
+                linkedin TEXT,
+                github TEXT,
+                skills TEXT,
+                experience_years TEXT,
+                degree TEXT,
+                university TEXT,
+                grad_year TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
+        create_notifications_table()
+        create_resumes_table()
+        create_learn_tables()
+        migrate_notifications_schema()
+        migrate_users_schema()
+        create_roadmaps_table()
+        print("[DB] Database initialized successfully.")
+    except Exception as e:
+        print(f"[DB] Error initializing database: {e}")
 
 def create_learn_tables():
     """Creates tables for the LEARN feature."""
