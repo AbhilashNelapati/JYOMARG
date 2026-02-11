@@ -12,36 +12,45 @@ class ABHIAssistant:
         if not api_key:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
-        # Configure with legacy SDK
         genai.configure(api_key=api_key or "DUMMY_KEY")
         
-        # Most universal model name for this SDK
-        self.model_name = "gemini-1.5-flash"
-        self.model = genai.GenerativeModel(
-            model_name=self.model_name,
-            system_instruction=(
-                "You are ABHI, the AI Tutor and Career Assistant for Project JYOMARG. "
-                "Always output valid JSON when requested."
-            )
-        )
+        # --- AUTO MODEL SELECTION ---
+        self.model_name = "gemini-pro" # Standard fallback
+        try:
+            # We list models and find one that supports 'generateContent'
+            available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            print(f"[SYSTEM] Available models: {available}")
+            
+            # Prefer flash if available, otherwise pro
+            if any("gemini-1.5-flash" in m for m in available):
+                self.model_name = [m for m in available if "gemini-1.5-flash" in m][0]
+            elif any("gemini-pro" in m for m in available):
+                self.model_name = [m for m in available if "gemini-pro" in m][0]
+            elif available:
+                self.model_name = available[0]
+                
+        except Exception as e:
+            print(f"[SYSTEM] Discovery failed, using default: {e}")
+
+        self.model = genai.GenerativeModel(model_name=self.model_name)
         print(f"[SYSTEM] AI Initialized with {self.model_name}")
 
     def _get_json_response(self, prompt):
         try:
-            response = self.model.generate_content(prompt)
+            # Adding explicit system instruction to the prompt since some older models need it there
+            full_prompt = f"SYSTEM: You are ABHI AI. Always output valid JSON.\nUSER: {prompt}"
+            response = self.model.generate_content(full_prompt)
             raw_text = response.text.strip()
             
-            # Extract JSON from Markdown
             clean_json = raw_text
             if "```" in clean_json:
                 match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", clean_json, re.DOTALL | re.IGNORECASE)
                 if match: clean_json = match.group(1)
             
-            # Simple validation
             json.loads(clean_json.strip())
             return clean_json.strip()
         except Exception as e:
-            print(f"[ERROR] AI Failed: {e}")
+            print(f"[ERROR] AI Failed ({self.model_name}): {e}")
             return f'{{"error": "AI Logic Failed: {str(e)[:100]}"}}'
 
     def analyze_skill_gap(self, resume_text, jd_text):
