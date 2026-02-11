@@ -964,7 +964,7 @@
                                 <div style="display: flex; gap: 8px; align-items: center;">
                                     <span class="match-badge">{{ job.match_score }}% Match</span>
                                     <button type="button" class="btn-action delete"
-                                        onclick="deleteProfileNotif({{ job.id }})"
+                                        onclick="deleteProfileNotif('{{ job.id }}')"
                                         style="opacity: 0.5; font-size: 0.8rem;">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -982,7 +982,8 @@
                                 {% endif %}
                             </div>
                             <a href="{{ job.apply_link }}" target="_blank" class="btn-apply"
-                                onclick="markRead({{ job.id }})">Apply Now <i class="fas fa-external-link-alt"></i></a>
+                                onclick="markRead('{{ job.id }}')">Apply Now <i
+                                    class="fas fa-external-link-alt"></i></a>
                         </div>
                         {% endfor %}
                         {% else %}
