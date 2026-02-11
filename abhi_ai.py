@@ -32,9 +32,12 @@ class ABHIAssistant:
         )
         
         
-        # Using Gemini 1.5 Flash - The most compatible and reliable model for production
-        self.model_name = "models/gemini-1.5-flash"
+        # Using Gemini 1.5 Flash (New SDK format: no 'models/' prefix)
+        self.model_name = "gemini-1.5-flash"
+        if not api_key or api_key == "DUMMY_KEY":
+            print("[CRITICAL] API Key is NOT being read correctly on server!")
         print(f"[SYSTEM] AI Model set to: {self.model_name}")
+        
 
     def _get_json_response(self, prompt):
         """Helper to get clean JSON from AI. Robust version with Logging."""
