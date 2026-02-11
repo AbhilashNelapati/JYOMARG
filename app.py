@@ -593,7 +593,8 @@ async def submit_quiz_api(request: Request, course_id: int):
 
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 9000))  # Use Render's assigned port if available
-    # Local development కోసం 127.0.0.1 వాడటం ఉత్తమం
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    port = int(os.environ.get("PORT", 9000))  
+    # Render కోసం మరియు బయటి ప్రపంచానికి సైట్ కనిపించడానికి 0.0.0.0 అవసరం
+    print(f"🚀 App starting on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
 

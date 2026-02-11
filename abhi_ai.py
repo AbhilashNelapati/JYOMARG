@@ -32,8 +32,8 @@ class ABHIAssistant:
         )
         
         
-        # Using Gemini 2.5 Flash as requested (user asked for latest version)
-        self.model_name = "models/gemini-3-flash-preview"
+        # Using Gemini 2.5 Flash as it's the latest available. Gemini 3 is not released yet.
+        self.model_name = "models/gemini-2.5-flash"
         print(f"[SYSTEM] AI Model set to: {self.model_name}")
 
     def _get_json_response(self, prompt):
