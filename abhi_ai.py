@@ -36,22 +36,34 @@ class ABHIAssistant:
         print(f"[SYSTEM] AI Initialized with {self.model_name}")
 
     def _get_json_response(self, prompt):
-        try:
-            # Adding explicit system instruction to the prompt since some older models need it there
-            full_prompt = f"SYSTEM: You are ABHI AI. Always output valid JSON.\nUSER: {prompt}"
-            response = self.model.generate_content(full_prompt)
-            raw_text = response.text.strip()
-            
-            clean_json = raw_text
-            if "```" in clean_json:
-                match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", clean_json, re.DOTALL | re.IGNORECASE)
-                if match: clean_json = match.group(1)
-            
-            json.loads(clean_json.strip())
-            return clean_json.strip()
-        except Exception as e:
-            print(f"[ERROR] AI Failed ({self.model_name}): {e}")
-            return f'{{"error": "AI Logic Failed: {str(e)[:100]}"}}'
+        import time
+        max_retries = 1
+        
+        for attempt in range(max_retries + 1):
+            try:
+                full_prompt = f"SYSTEM: You are ABHI AI. Always output valid JSON.\nUSER: {prompt}"
+                response = self.model.generate_content(full_prompt)
+                raw_text = response.text.strip()
+                
+                clean_json = raw_text
+                if "```" in clean_json:
+                    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", clean_json, re.DOTALL | re.IGNORECASE)
+                    if match: clean_json = match.group(1)
+                
+                json.loads(clean_json.strip())
+                return clean_json.strip()
+                
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str and attempt < max_retries:
+                    print(f"[RETRY] Quota exceeded. Waiting 5s for attempt {attempt + 1}...")
+                    time.sleep(5)
+                    continue
+                    
+                print(f"[ERROR] AI Failed ({self.model_name}): {e}")
+                if "429" in err_str:
+                    return '{"error": "AI Quota Exceeded. Please wait 1 minute and retry."}'
+                return f'{{"error": "AI Logic Failed: {err_str[:100]}"}}'
 
     def analyze_skill_gap(self, resume_text, jd_text):
         prompt = f"Analyze Resume vs JD. Output JSON: {{'match_score': 0..100, 'skill_scores': {{}}, 'missing_skills': [], 'advice': ''}}"
