@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 import PyPDF2
 import shutil
 from fastapi import FastAPI, Request, Form, Body, File, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -282,17 +282,20 @@ async def handle_signup(request: Request, full_name: str = Form(...), email: str
     if add_user(full_name, email, password):
          return RedirectResponse(url="/login", status_code=303)
     else:
-         return "Error: Email already registered."
+         return HTMLResponse(content="Error: Email already registered. <a href='/signup'>Try again</a>", status_code=400)
 
 @app.post("/auth/login")
 async def handle_login(request: Request, email: str = Form(...), password: str = Form(...)):
+    print(f"[AUTH] Login attempt for: {email}")
     user = get_user(email, password)
 
     if user:
+        print(f"[AUTH] Login successful for: {email}")
         request.session["user"] = {"name": user[0], "email": user[1]}
         return RedirectResponse(url="/dashboard", status_code=303)
     else:
-        return "Invalid Credentials. <a href='/login'>Try Again</a>"
+        print(f"[AUTH] Login failed: Invalid credentials for {email}")
+        return HTMLResponse(content="Invalid Credentials. <a href='/login'>Try Again</a>", status_code=401)
 
 @app.get("/logout")
 async def logout(request: Request):
@@ -588,7 +591,7 @@ async def submit_quiz_api(request: Request, course_id: int):
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9000))  
-    print(f"🚀 App starting on port {port}")
-    # Render binding requires 0.0.0.0
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
+    print(f"🚀 Starting Production Server on port {port}...")
+    # Use app object directly to avoid double import overhead
+    uvicorn.run(app, host="0.0.0.0", port=port)
 

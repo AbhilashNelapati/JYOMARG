@@ -102,6 +102,7 @@ def add_user(full_name, email, password):
         cursor.execute("INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)", (full_name, email, password))
         conn.commit()
         conn.close()
+        print(f"[DB] User added successfully: {email}")
         return True
     except sqlite3.IntegrityError:
         return False
@@ -113,6 +114,10 @@ def get_user(email, password):
     cursor.execute("SELECT full_name, email FROM users WHERE email = ? AND password = ?", (email, password))
     user = cursor.fetchone()
     conn.close()
+    if user:
+        print(f"[DB] User found: {email}")
+    else:
+        print(f"[DB] User NOT found or password mismatch: {email}")
     return user
 
 def update_user_profile(email, phone, location, bio, linkedin, github, skills, experience_years, degree, university, grad_year, resume_path=None, resume_text=None):
