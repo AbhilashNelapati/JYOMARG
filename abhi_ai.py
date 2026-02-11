@@ -32,8 +32,8 @@ class ABHIAssistant:
         )
         
         
-        # Using Gemini 2.5 Pro - Highly stable and performant coding model
-        self.model_name = "models/gemini-2.5-pro"
+        # Using Gemini 1.5 Pro - Highly stable and widely available performant model
+        self.model_name = "models/gemini-1.5-pro"
         print(f"[SYSTEM] AI Model set to: {self.model_name}")
 
     def _get_json_response(self, prompt):
