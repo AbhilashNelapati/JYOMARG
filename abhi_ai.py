@@ -32,8 +32,8 @@ class ABHIAssistant:
         )
         
         
-        # Using Gemini 2.5 Flash as requested (user asked for latest version)
-        self.model_name = "models/gemini-3-pro-preview"
+        # Using Gemini 2.5 Pro - Highly stable and performant coding model
+        self.model_name = "models/gemini-2.5-pro"
         print(f"[SYSTEM] AI Model set to: {self.model_name}")
 
     def _get_json_response(self, prompt):
@@ -62,15 +62,15 @@ class ABHIAssistant:
                 )
             except Exception as outer_e:
                 err_str = str(outer_e)
-                # If any error with primary model, attempt fallback
-                if "429" in err_str or "quota" in err_str.lower():
-                    log_debug("PRIMARY QUOTA EXCEEDED. Attempting fallback to gemini-1.5-flash...")
+                # If model not found or quota exceeded, attempt fallback
+                if any(x in err_str.lower() for x in ["429", "quota", "404", "not_found", "not found"]):
+                    log_debug(f"PRIMARY FAILED ({err_str[:50]}). Attempting fallback to gemini-1.5-flash...")
                     response = self.client.models.generate_content(
                         model="models/gemini-1.5-flash",
                         contents=prompt,
                         config=genai.types.GenerateContentConfig(
                             response_mime_type="application/json",
-                            max_output_tokens=40000,  # Significantly increased for deep roadmaps
+                            max_output_tokens=40000,
                             system_instruction=self.instruction
                         )
                     )
@@ -144,16 +144,22 @@ class ABHIAssistant:
     def generate_day_content(self, topic, day_title):
         prompt = f"Detailed Markdown tutorial for {topic} - {day_title}."
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=self.instruction
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(system_instruction=self.instruction)
                 )
-            )
+            except Exception as e:
+                # Fallback on any error for content generation
+                response = self.client.models.generate_content(
+                    model="models/gemini-1.5-flash",
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(system_instruction=self.instruction)
+                )
             return response.text.strip()
         except:
-            return "Error generating content."
+            return "Error generating content. Please retry."
     
     def generate_assessment(self, topic, week_number, is_final=False):
         prompt = f"Generate quiz JSON for {topic}."

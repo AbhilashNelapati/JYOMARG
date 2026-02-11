@@ -33,9 +33,13 @@ abhi = ABHIAssistant()
 
 # --- Page Routes ---
 
-@app.get("/", response_class=HTMLResponse)
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def landing_page(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 @app.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
@@ -43,8 +47,6 @@ async def signup_page(request: Request):
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -125,15 +127,7 @@ async def profile_page(request: Request):
 
     return templates.TemplateResponse("profile.html", {"request": request, "user": user_data, "notifications": notifications, "resumes": resumes})
 
-@app.get("/api/notifications")
-async def get_notifications_api(request: Request):
-    user_session = request.session.get("user")
-    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    
-    notifications = get_notifications(user_session["email"])
-    # Convert Row objects to dicts
-    notifs_list = [dict(row) for row in notifications]
-    return JSONResponse(notifs_list)
+# Notifications API moved to consolidated section below
 
 @app.post("/api/notifications/search")
 async def trigger_search_custom(request: Request):
@@ -594,7 +588,7 @@ async def submit_quiz_api(request: Request, course_id: int):
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9000))  
-    # Render కోసం మరియు బయటి ప్రపంచానికి సైట్ కనిపించడానికి 0.0.0.0 అవసరం
     print(f"🚀 App starting on port {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    # Render binding requires 0.0.0.0
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
 
