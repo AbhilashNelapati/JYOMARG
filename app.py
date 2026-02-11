@@ -585,6 +585,8 @@ async def submit_quiz_api(request: Request, course_id: int):
 
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 9000))  # Use Render's assigned port if available
+    port = int(os.environ.get("PORT", 9000))
+    # Deployment కోసం 0.0.0.0 అవసరం, కానీ లోకల్‌గా localhost వాడాలి
+    print(f"🚀 App starting on: http://localhost:{port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
 
