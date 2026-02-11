@@ -12,21 +12,22 @@ class ABHIAssistant:
         if not api_key:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
-        # Using gemini-2.5-flash which is available and stable
-        self.model_name = "gemini-2.5-flash"
+        # Using gemini-1.5-flash which is stable and has high free-tier limits (15 RPM)
+        self.model_name = "gemini-1.5-flash"
         self.model = genai.GenerativeModel(model_name=self.model_name)
         
         print(f"[SYSTEM] AI Initialized with {self.model_name}")
 
     def _get_json_response(self, prompt):
         import time
-        for attempt in range(2): # Try 2 times
+        max_attempts = 3
+        for attempt in range(max_attempts):
             try:
                 full_prompt = f"SYSTEM: You are ABHI AI. You MUST output ONLY valid JSON. No conversational text.\nUSER: {prompt}"
                 response = self.model.generate_content(full_prompt)
                 
                 if not response or not hasattr(response, 'text'):
-                    raise Exception("Empty response")
+                    raise Exception("Empty response from AI")
                 
                 raw_text = response.text.strip()
                 clean_json = raw_text
@@ -37,7 +38,6 @@ class ABHIAssistant:
                     if match: 
                         clean_json = match.group(1)
                     else:
-                        # Fallback: find first { or [ and last } or ]
                         start_obj = clean_json.find('{')
                         start_list = clean_json.find('[')
                         start = min(start_obj, start_list) if (start_obj != -1 and start_list != -1) else max(start_obj, start_list)
@@ -53,12 +53,18 @@ class ABHIAssistant:
                 return clean_json.strip()
                 
             except Exception as e:
-                if "429" in str(e) and attempt == 0:
-                    print("[SYSTEM] Quota hit, retrying in 2s...")
-                    time.sleep(2)
-                    continue
-                print(f"[ERROR] AI Failed: {str(e)}")
-                return json.dumps({"error": str(e)})
+                error_str = str(e)
+                if "429" in error_str:
+                    if attempt < max_attempts - 1:
+                        wait_time = (attempt + 1) * 5 # Wait 5s, then 10s
+                        print(f"[SYSTEM] Rate limit hit. Retrying in {wait_time}s...")
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        return json.dumps({"error": "AI is temporarily busy (Rate Limit). Please wait 60 seconds and try again."})
+                
+                print(f"[ERROR] AI Failed: {error_str}")
+                return json.dumps({"error": f"AI Error: {error_str}"})
 
     def analyze_skill_gap(self, resume_text, jd_text):
         prompt = f"Analyze Resume vs JD. Output JSON: {{'match_score': 0..100, 'skill_scores': {{}}, 'missing_skills': [], 'advice': ''}}"
@@ -82,12 +88,17 @@ class ABHIAssistant:
         return self._get_json_response(prompt)
 
     def generate_day_content(self, topic, day_title):
+        import time
         prompt = f"Write a detailed professional markdown guide for {topic}: {day_title}. Focus on practical examples."
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
-        except:
-            return "Error generating content."
+        for attempt in range(2):
+            try:
+                response = self.model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as e:
+                if "429" in str(e) and attempt == 0:
+                    time.sleep(5)
+                    continue
+                return f"AI is temporarily overloaded. Please try again in a minute. (Error: {str(e)})"
 
     def generate_assessment(self, topic, week_number, is_final=False):
         prompt = f"Generate 5 MCQs for {topic} Week {week_number}. Output ONLY as JSON: {{'questions': [{{'id': 1, 'question': '', 'options': ['', '', '', ''], 'answer': ''}}]}}"
