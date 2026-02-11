@@ -17,45 +17,33 @@ class ABHIAssistant:
             print("[CRITICAL] GOOGLE_API_KEY is missing from .env file!")
             
         # Initialize the new GenAI client
-        self.client = genai.Client(api_key=api_key or "DUMMY_KEY")
+        if not api_key or api_key == "DUMMY_KEY":
+             print("[CRITICAL] GOOGLE_API_KEY IS MISSING! Please add it to your Railway/Vercel Variables.")
+             self.client = None
+        else:
+             self.client = genai.Client(api_key=api_key)
         
         # --- ROBUST MODEL SELECTION ---
-        # Instead of hardcoding, we will try to find the best available model
-        self.model_name = "gemini-1.5-flash" # Default fallback
+        self.model_name = "gemini-1.5-flash" 
         
-        try:
-            # Check if API Key is actually there
-            if not api_key or len(api_key) < 10:
-                print("[CRITICAL] GOOGLE_API_KEY is invalid or missing!")
-            
-            # List available models to find what this key can actually use
-            # This prevents "Model Not Found" 404 errors
-            print("[SYSTEM] Discovering available models...")
-            available_models = []
-            for model in self.client.models.list():
-                # We want gemini models that support generation
-                if "gemini" in model.name.lower() and "generateContent" in model.supported_generation_methods:
-                    # Clean the name (remove 'models/' if present)
-                    clean_name = model.name.replace("models/", "")
-                    available_models.append(clean_name)
-            
-            print(f"[SYSTEM] Found models: {available_models}")
-            
-            # Priority list for selection
-            priorities = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
-            for p in priorities:
-                if p in available_models:
-                    self.model_name = p
-                    break
-            else:
-                if available_models:
-                    self.model_name = available_models[0]
-                    
-            print(f"[SYSTEM] Selected best working model: {self.model_name}")
-            
-        except Exception as e:
-            print(f"[CRITICAL] Model discovery failed: {e}")
-            print(f"[SYSTEM] Falling back to hardcoded model: {self.model_name}")
+        if self.client:
+            try:
+                print("[SYSTEM] Discovering available models...")
+                available_models = []
+                for model in self.client.models.list():
+                    if "gemini" in model.name.lower() and "generateContent" in model.supported_generation_methods:
+                        clean_name = model.name.replace("models/", "")
+                        available_models.append(clean_name)
+                
+                print(f"[SYSTEM] Found models: {available_models}")
+                priorities = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+                for p in priorities:
+                    if p in available_models:
+                        self.model_name = p
+                        break
+                print(f"[SYSTEM] Selected: {self.model_name}")
+            except Exception as e:
+                print(f"[ERROR] Discovery failed: {e}")
 
         self.instruction = (
             "You are ABHI (Artificial Being for Human Intelligence), the dual-role AI Tutor and Career Assistant for Project JYOMARG.\n\n"
@@ -67,6 +55,9 @@ class ABHIAssistant:
 
     def _get_json_response(self, prompt):
         """Helper to get clean JSON from AI. Robust version with fallback."""
+        if not self.client:
+             return '{"error": "AI Config Error: GOOGLE_API_KEY is missing from environment variables."}'
+             
         try:
             # Attempt with the auto-discovered model
             response = self.client.models.generate_content(
