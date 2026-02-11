@@ -18,9 +18,11 @@ class ABHIAssistant:
             
         # Initialize the new GenAI client
         if not api_key or api_key == "DUMMY_KEY":
-             print("[CRITICAL] GOOGLE_API_KEY IS MISSING! Please add it to your Railway/Vercel Variables.")
+             print("[CRITICAL] GOOGLE_API_KEY IS MISSING! Check Vercel/Railway Environment Variables.")
              self.client = None
         else:
+             # Masked log for safety
+             print(f"[SYSTEM] API Key found (starts with: {api_key[:4]}...)")
              self.client = genai.Client(api_key=api_key)
         
         # --- ROBUST MODEL SELECTION ---
@@ -83,7 +85,10 @@ class ABHIAssistant:
 
         except Exception as e:
             print(f"[ERROR] AI Logic Failed for {self.model_name}: {e}")
-            # Final Fallback Attempt with gemini-1.5-flash (Standard)
+            import traceback
+            traceback.print_exc() # This will show the FULL error in Vercel logs
+            
+            # Final Fallback Attempt
             if self.model_name != "gemini-1.5-flash":
                 try:
                     print("[SYSTEM] Attempting final fallback to gemini-1.5-flash...")
