@@ -12,8 +12,12 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 class ABHIAssistant:
     def __init__(self):
+        # API Key check
+        if not api_key:
+            print("[CRITICAL] GOOGLE_API_KEY is missing from .env file!")
+            
         # Initialize the new GenAI client
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(api_key=api_key or "DUMMY_KEY")
         
         self.instruction = (
             "You are ABHI (Artificial Being for Human Intelligence), the dual-role AI Tutor and Career Assistant for Project JYOMARG.\n\n"
@@ -28,8 +32,8 @@ class ABHIAssistant:
         )
         
         
-        # Using Gemini 2.0 Flash - stable and widely available in new API
-        self.model_name = "models/gemini-2.0-flash"
+        # Using Gemini 2.5 Flash as requested (user asked for latest version)
+        self.model_name = "models/gemini-3-flash-preview"
         print(f"[SYSTEM] AI Model set to: {self.model_name}")
 
     def _get_json_response(self, prompt):
@@ -60,9 +64,9 @@ class ABHIAssistant:
                 err_str = str(outer_e)
                 # If any error with primary model, attempt fallback
                 if "429" in err_str or "quota" in err_str.lower():
-                    log_debug("PRIMARY QUOTA EXCEEDED. Attempting fallback to gemini-2.5-flash...")
+                    log_debug("PRIMARY QUOTA EXCEEDED. Attempting fallback to gemini-1.5-flash...")
                     response = self.client.models.generate_content(
-                        model="models/gemini-2.5-flash",
+                        model="models/gemini-1.5-flash",
                         contents=prompt,
                         config=genai.types.GenerateContentConfig(
                             response_mime_type="application/json",
@@ -111,7 +115,30 @@ class ABHIAssistant:
         return self._get_json_response(prompt)
 
     def generate_course_syllabus(self, topic):
-        prompt = f"Generate syllabus for {topic}. Phase/Week/Day JSON."
+        prompt = f"""
+        Generate a comprehensive learning syllabus for the topic: '{topic}'.
+        STRICT RULES:
+        1. Use ONLY lowercase keys in the JSON (e.g., 'weeks', 'days', 'title', 'day_number').
+        2. Format: Phase -> weeks -> days.
+        
+        Output ONLY valid JSON in this structure:
+        {{
+            "title": "Mastering {topic}",
+            "description": "A detailed course to master {topic} from scratch.",
+            "weeks": [
+                {{
+                    "week_number": 1,
+                    "title": "Introduction to {topic}",
+                    "days": [
+                        {{ "day_number": 1, "title": "Basics of {topic}" }},
+                        {{ "day_number": 2, "title": "Fundamental Concepts" }},
+                        ...
+                    ]
+                }}
+            ]
+        }}
+        Provide 4-8 weeks of content.
+        """
         return self._get_json_response(prompt)
 
     def generate_day_content(self, topic, day_title):

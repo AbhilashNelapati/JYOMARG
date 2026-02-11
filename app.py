@@ -516,6 +516,14 @@ async def generate_course_api(request: Request):
     # Generate Syllabus via AI
     syllabus_json = abhi.generate_course_syllabus(topic)
     
+    # Check for AI Error
+    try:
+        check_err = json.loads(syllabus_json)
+        if "error" in check_err:
+            return JSONResponse({"error": check_err["error"]}, 500)
+    except:
+        pass # Not JSON or other error, fallback to DB attempt
+    
     # Create in DB
     course_id = create_course(user["email"], topic, syllabus_json)
     
@@ -585,8 +593,7 @@ async def submit_quiz_api(request: Request, course_id: int):
 
 # Revert port change if necessary, keeping it standard 8000 for now or user's preference
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 9000))
-    # Deployment కోసం 0.0.0.0 అవసరం, కానీ లోకల్‌గా localhost వాడాలి
-    print(f"🚀 App starting on: http://localhost:{port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 9000))  # Use Render's assigned port if available
+    # Local development కోసం 127.0.0.1 వాడటం ఉత్తమం
+    uvicorn.run(app, host="127.0.0.1", port=port)
 

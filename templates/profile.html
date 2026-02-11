@@ -748,6 +748,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="/learn" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>LEARN</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="/career-architect" class="nav-link">
                     <i class="fas fa-drafting-compass"></i>
                     <span>Career Architect</span>
@@ -1006,29 +1012,38 @@
 
                 grid.innerHTML = '';
                 courses.forEach(c => {
-                    const syllabus = JSON.parse(c.syllabus_json);
-                    const totalWeeks = syllabus.weeks.length;
-                    const totalDays = totalWeeks * 5;
-                    const progressPct = ((c.current_week - 1) * 5 + c.current_day) / totalDays * 100;
+                    try {
+                        let syllabus = JSON.parse(c.syllabus_json);
 
-                    const card = `
-                        <div class="job-card" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
-                            <div>
-                                <div class="job-header">
-                                    <h3 class="job-title" style="color:var(--neon-blue);">${c.topic}</h3>
-                                    <span class="match-badge">${Math.round(progressPct)}%</span>
+                        // Normalize Keys (Case-insensitive check)
+                        const weeks = syllabus.weeks || syllabus.Weeks || syllabus.WEEKs;
+                        if (!weeks) return;
+
+                        const totalWeeks = weeks.length;
+                        const totalDays = totalWeeks * 5;
+                        const progressPct = ((c.current_week - 1) * 5 + c.current_day) / totalDays * 100;
+
+                        const card = `
+                            <div class="job-card" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+                                <div>
+                                    <div class="job-header">
+                                        <h3 class="job-title" style="color:var(--neon-blue);">${c.topic}</h3>
+                                        <span class="match-badge">${Math.round(progressPct)}%</span>
+                                    </div>
+                                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-bottom:10px;">
+                                        <div style="width:${progressPct}%; height:100%; background:var(--neon-green); border-radius:2px;"></div>
+                                    </div>
+                                    <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">
+                                        ${(syllabus.description || syllabus.Description || 'AI Generated Course').substring(0, 60)}...
+                                    </p>
                                 </div>
-                                <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-bottom:10px;">
-                                    <div style="width:${progressPct}%; height:100%; background:var(--neon-green); border-radius:2px;"></div>
-                                </div>
-                                <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">
-                                    ${syllabus.description ? syllabus.description.substring(0, 60) + '...' : 'AI Generated Course'}
-                                </p>
+                                <a href="/learn?id=${c.id}" class="btn-apply" style="text-align:center;">Continue Learning</a>
                             </div>
-                            <a href="/learn" class="btn-apply" style="text-align:center;">Continue Learning</a>
-                        </div>
-                    `;
-                    grid.innerHTML += card;
+                        `;
+                        grid.innerHTML += card;
+                    } catch (err) {
+                        console.error("Skipping broken course:", err);
+                    }
                 });
             } catch (e) {
                 console.error("Error loading courses:", e);
