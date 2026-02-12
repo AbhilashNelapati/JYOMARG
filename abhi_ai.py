@@ -12,7 +12,6 @@ class ABHIAssistant:
         if not api_key:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
-        # Using gemini-1.5-flash which is stable and has high free-tier limits (15 RPM)
         self.model_name = "gemini-1.5-flash"
         self.model = genai.GenerativeModel(model_name=self.model_name)
         
@@ -32,7 +31,6 @@ class ABHIAssistant:
                 raw_text = response.text.strip()
                 clean_json = raw_text
                 
-                # Extract JSON block (supports { } and [ ])
                 if "```" in clean_json:
                     match = re.search(r"```(?:json)?\s*([\{\[].*?[\}\]])\s*```", clean_json, re.DOTALL | re.IGNORECASE)
                     if match: 
@@ -56,7 +54,7 @@ class ABHIAssistant:
                 error_str = str(e)
                 if "429" in error_str:
                     if attempt < max_attempts - 1:
-                        wait_time = (attempt + 1) * 5 # Wait 5s, then 10s
+                        wait_time = (attempt + 1) * 5 
                         print(f"[SYSTEM] Rate limit hit. Retrying in {wait_time}s...")
                         time.sleep(wait_time)
                         continue

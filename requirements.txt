@@ -1,8 +1,9 @@
-google-generativeai
-python-dotenv
 fastapi
 uvicorn
-jinja2
 python-multipart
-itsdangerous
+google-generativeai
+python-dotenv
 PyPDF2
+jinja2
+requests
+psycopg2-binary

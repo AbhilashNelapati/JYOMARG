@@ -6,44 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Career Architect | JYOMARG</title>
 
-    <!-- Fonts -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    <!-- Icons -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- PDF Export -->
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Anime.js for smooth animations -->
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
         :root {
-            /* Palette: Deep Space Cyberpunk */
+            
             --bg-deep: #050510;
             --bg-panel: rgba(20, 20, 35, 0.6);
             --primary-neon: #00f3ff;
-            /* Cyan */
+            
             --secondary-neon: #bc13fe;
-            /* Purple */
+            
             --accent-success: #0aff68;
-            /* Green */
+            
             --accent-danger: #ff2a6d;
-            /* Red */
+            
             --text-main: #e0e6ed;
             --text-dim: #94a3b8;
 
-            /* Legacy/Compat Variables */
+            
             --neon-blue: var(--primary-neon);
             --neon-green: var(--accent-success);
             --glass: rgba(255, 255, 255, 0.05);
 
-            /* Effects */
+            
             --glass-border: 1px solid rgba(255, 255, 255, 0.08);
             --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
             --sidebar-width: 280px;
@@ -72,7 +72,7 @@
             overflow: hidden;
         }
 
-        /* --- SIDEBAR --- */
+        
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
@@ -127,7 +127,7 @@
             }
         }
 
-        /* Navigation */
+        
         .nav-menu {
             list-style: none;
             padding: 0;
@@ -212,7 +212,7 @@
             box-shadow: 0 0 10px var(--primary-neon);
         }
 
-        /* User Profile in Sidebar */
+        
         .sidebar-footer {
             margin-top: auto;
             border-top: var(--glass-border);
@@ -282,7 +282,7 @@
             background: rgba(255, 42, 109, 0.1);
         }
 
-        /* --- MAIN CONTENT --- */
+        
         .main-wrapper {
             flex: 1;
             position: relative;
@@ -368,12 +368,12 @@
             transition: 0.4s;
         }
 
-        /* Resume Builder - Blue */
+        
         .feature-card[href="/resume"] .card-icon {
             color: var(--primary-neon);
         }
 
-        /* Skill Analyzer - Pink */
+        
         .feature-card[href="/analyzer"] .card-icon {
             color: var(--primary-neon);
         }
@@ -396,13 +396,13 @@
             line-height: 1.6;
         }
 
-        /* Hover Glows for Cards */
+        
         .feature-card:hover .card-title {
             color: #fff;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        /* Roadmap Styles */
+        
         .roadmap-wrapper {
             width: 100%;
             max-width: 1000px;
@@ -521,7 +521,7 @@
 
 <body>
 
-    <!-- Sidebar -->
+    
     <nav class="sidebar">
         <div class="brand-box">
             <i class="fas fa-atom brand-icon"></i>
@@ -579,14 +579,14 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
+    
     <main class="main-wrapper">
         <div class="content-scrollable">
 
             <h1><i class="fas fa-layer-group"></i> Career Architect</h1>
 
             <div class="cards-container">
-                <!-- Resume Builder Block -->
+                
                 <a href="/resume" class="feature-card">
                     <i class="fas fa-file-contract card-icon"></i>
                     <div class="card-title">Resume Builder</div>
@@ -594,7 +594,7 @@
                         optimization.</div>
                 </a>
 
-                <!-- Skill Analyzer Block -->
+                
                 <a href="/analyzer" class="feature-card">
                     <i class="fas fa-brain card-icon"></i>
                     <div class="card-title">Skill Analyzer</div>
@@ -602,13 +602,13 @@
                 </a>
             </div>
 
-            <!-- Career Roadmap Block -->
+            
             <div class="roadmap-wrapper">
                 <h2 style="margin-top: 0; color: var(--primary-neon); text-shadow: var(--glow-text);">
                     <i class="fas fa-route"></i> Career Architect Roadmap
                 </h2>
 
-                <!-- Input State -->
+                
                 <div id="roadmap-input-state" style="text-align: center; padding: 20px;">
                     <p class="text-dim">Define your ambition. ABHI will architect the path.</p>
                     <div style="display: flex; gap: 15px; max-width: 600px; margin: 30px auto;">
@@ -626,7 +626,7 @@
                     </div>
                 </div>
 
-                <!-- Display State -->
+                
                 <div id="roadmap-display-state" style="display: none;">
                     <div style="padding: 10px;">
                         <div class="glass-panel"
@@ -659,11 +659,11 @@
                             </div>
                         </div>
 
-                        <!-- Full Timeline (Toggleable) -->
+                        
                         <div id="full-roadmap-view"
                             style="display: none; margin-top: 30px; animation: fadeIn 0.5s ease;">
                             <div class="roadmap-timeline" id="roadmap-timeline-container">
-                                <!-- Timeline items injected via JS -->
+                                
                             </div>
                         </div>
                     </div>
