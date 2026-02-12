@@ -13,7 +13,7 @@ class ABHIAssistant:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
         # Using gemini-1.5-flash which is stable and has high free-tier limits (15 RPM)
-        self.model_name = "gemini-1.5-flash"
+        self.model_name = "gemini-3-pro"
         self.model = genai.GenerativeModel(model_name=self.model_name)
         
         print(f"[SYSTEM] AI Initialized with {self.model_name}")
