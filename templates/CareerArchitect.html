@@ -6,44 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Career Architect | JYOMARG</title>
 
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
         :root {
-            
+
             --bg-deep: #050510;
             --bg-panel: rgba(20, 20, 35, 0.6);
             --primary-neon: #00f3ff;
-            
+
             --secondary-neon: #bc13fe;
-            
+
             --accent-success: #0aff68;
-            
+
             --accent-danger: #ff2a6d;
-            
+
             --text-main: #e0e6ed;
             --text-dim: #94a3b8;
 
-            
+
             --neon-blue: var(--primary-neon);
             --neon-green: var(--accent-success);
             --glass: rgba(255, 255, 255, 0.05);
 
-            
+
             --glass-border: 1px solid rgba(255, 255, 255, 0.08);
             --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
             --sidebar-width: 280px;
@@ -72,7 +72,7 @@
             overflow: hidden;
         }
 
-        
+
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
@@ -127,7 +127,7 @@
             }
         }
 
-        
+
         .nav-menu {
             list-style: none;
             padding: 0;
@@ -212,7 +212,7 @@
             box-shadow: 0 0 10px var(--primary-neon);
         }
 
-        
+
         .sidebar-footer {
             margin-top: auto;
             border-top: var(--glass-border);
@@ -282,7 +282,7 @@
             background: rgba(255, 42, 109, 0.1);
         }
 
-        
+
         .main-wrapper {
             flex: 1;
             position: relative;
@@ -368,12 +368,12 @@
             transition: 0.4s;
         }
 
-        
+
         .feature-card[href="/resume"] .card-icon {
             color: var(--primary-neon);
         }
 
-        
+
         .feature-card[href="/analyzer"] .card-icon {
             color: var(--primary-neon);
         }
@@ -396,13 +396,13 @@
             line-height: 1.6;
         }
 
-        
+
         .feature-card:hover .card-title {
             color: #fff;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        
+
         .roadmap-wrapper {
             width: 100%;
             max-width: 1000px;
@@ -521,7 +521,7 @@
 
 <body>
 
-    
+
     <nav class="sidebar">
         <div class="brand-box">
             <i class="fas fa-atom brand-icon"></i>
@@ -574,19 +574,19 @@
                 </div>
             </a>
             <a href="/logout" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Disconnect System
+                <i class="fas fa-power-off"></i> Disconnect System
             </a>
         </div>
     </nav>
 
-    
+
     <main class="main-wrapper">
         <div class="content-scrollable">
 
             <h1><i class="fas fa-layer-group"></i> Career Architect</h1>
 
             <div class="cards-container">
-                
+
                 <a href="/resume" class="feature-card">
                     <i class="fas fa-file-contract card-icon"></i>
                     <div class="card-title">Resume Builder</div>
@@ -594,21 +594,28 @@
                         optimization.</div>
                 </a>
 
-                
+
                 <a href="/analyzer" class="feature-card">
                     <i class="fas fa-brain card-icon"></i>
                     <div class="card-title">Skill Analyzer</div>
                     <div class="card-desc">Scan your skills against market demands and identify critical gaps.</div>
                 </a>
+
+                <a href="/ats-checker" class="feature-card">
+                    <i class="fas fa-search-plus card-icon"></i>
+                    <div class="card-title">ATS Checker</div>
+                    <div class="card-desc">Get your ATS score and expert AI suggestions to bypass automated filters.
+                    </div>
+                </a>
             </div>
 
-            
+
             <div class="roadmap-wrapper">
                 <h2 style="margin-top: 0; color: var(--primary-neon); text-shadow: var(--glow-text);">
                     <i class="fas fa-route"></i> Career Architect Roadmap
                 </h2>
 
-                
+
                 <div id="roadmap-input-state" style="text-align: center; padding: 20px;">
                     <p class="text-dim">Define your ambition. ABHI will architect the path.</p>
                     <div style="display: flex; gap: 15px; max-width: 600px; margin: 30px auto;">
@@ -626,7 +633,7 @@
                     </div>
                 </div>
 
-                
+
                 <div id="roadmap-display-state" style="display: none;">
                     <div style="padding: 10px;">
                         <div class="glass-panel"
@@ -659,11 +666,11 @@
                             </div>
                         </div>
 
-                        
+
                         <div id="full-roadmap-view"
                             style="display: none; margin-top: 30px; animation: fadeIn 0.5s ease;">
                             <div class="roadmap-timeline" id="roadmap-timeline-container">
-                                
+
                             </div>
                         </div>
                     </div>
@@ -723,26 +730,54 @@
             const domain = document.getElementById('domain-input').value;
             if (!domain) return alert("Please enter a target domain.");
 
-            document.getElementById('roadmap-loader').style.display = 'block';
+            const loader = document.getElementById('roadmap-loader');
+            loader.style.display = 'block';
 
-            try {
-                const response = await fetch('/api/career/roadmap/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ domain: domain })
-                });
-                const roadmap = await response.json();
+            let attempts = 0;
+            const maxClientAttempts = 3;
 
-                if (roadmap.error) {
-                    alert('Error: ' + roadmap.error);
-                } else {
-                    renderRoadmap(roadmap, domain);
+            async function performRequest() {
+                try {
+                    const response = await fetch('/api/career/roadmap/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ domain: domain })
+                    });
+
+                    if (response.status === 503 && attempts < maxClientAttempts) {
+                        attempts++;
+                        console.log(`[AI] Roadmap Limit. Retry ${attempts}/${maxClientAttempts}...`);
+                        setTimeout(performRequest, attempts * 4000);
+                        return;
+                    }
+
+                    const roadmap = await response.json();
+
+                    if (roadmap.error) {
+                        if (roadmap.error.includes("Rate Limit") && attempts < maxClientAttempts) {
+                            attempts++;
+                            setTimeout(performRequest, attempts * 4000);
+                            return;
+                        }
+                        alert('ABHI is currently busy. Please wait a moment and try again.');
+                    } else {
+                        renderRoadmap(roadmap, domain);
+                    }
+                } catch (error) {
+                    if (attempts < maxClientAttempts) {
+                        attempts++;
+                        setTimeout(performRequest, attempts * 4000);
+                    } else {
+                        alert("System Error: AI Core is temporarily unavailable. Try again in 1 minute.");
+                    }
+                } finally {
+                    if (attempts >= maxClientAttempts || !loader.offsetParent) {
+                        loader.style.display = 'none';
+                    }
                 }
-            } catch (error) {
-                alert("System Error: Could not generate roadmap.");
-            } finally {
-                document.getElementById('roadmap-loader').style.display = 'none';
             }
+
+            performRequest();
         }
 
         function renderRoadmap(roadmap, domain) {

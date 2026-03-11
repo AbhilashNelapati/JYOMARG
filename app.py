@@ -14,7 +14,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from abhi_ai import ABHIAssistant
-from database import init_db, add_user, get_user, get_user_profile, update_user_profile, add_notification, get_notifications, mark_notifications_read, migrate_notifications_schema, migrate_users_schema, add_resume, get_user_resumes, delete_resume, set_active_resume, get_active_resume_text, create_course, get_user_courses, get_course_details, save_day_content, get_day_content, update_course_progress, save_roadmap, get_user_roadmap, delete_roadmap
+from database import init_db, add_user, get_user, get_user_profile, update_user_profile, add_notification, get_notifications, get_today_notifications, cleanup_old_notifications, mark_notifications_read, migrate_notifications_schema, migrate_users_schema, add_resume, get_user_resumes, delete_resume, set_active_resume, get_active_resume_text, create_course, get_user_courses, get_course_details, save_day_content, get_day_content, update_course_progress, save_roadmap, get_user_roadmap, delete_roadmap
 
 init_db()
 
@@ -73,21 +73,23 @@ async def profile_page(request: Request):
     
     if not notifications and user_data:
         user_profile_dict = dict(user_data) 
-        alerts_json = abhi.generate_job_alerts(user_profile_dict)
+        alerts_raw = abhi.generate_job_alerts(user_profile_dict)
         try:
-            alerts = json.loads(alerts_json)
-            for alert in alerts:
-                add_notification(
-                    user_email, 
-                    alert.get("job_title", "Unknown Role"), 
-                    alert.get("company", "Unknown Company"), 
-                    alert.get("match_score", 0), 
-                    alert.get("reason", "Profile Match"),
-                    alert.get("apply_link", "#")
-                )
-            notifications = get_notifications(user_email)
-        except:
-            pass 
+            alerts_data = json.loads(alerts_raw)
+            if "error" not in alerts_data:
+                jobs = alerts_data.get("jobs", [])
+                for alert in jobs:
+                    add_notification(
+                        user_email, 
+                        alert.get("job_title", "Unknown Role"), 
+                        alert.get("company", "Unknown Company"), 
+                        alert.get("match_score", 0), 
+                        alert.get("reason", "Profile Match"),
+                        alert.get("apply_link", "#")
+                    )
+                notifications = get_notifications(user_email)
+        except Exception as e:
+            print(f"[ERROR] Profile alert generation failed: {e}")
             
     resumes = get_user_resumes(user_email)
     
@@ -128,11 +130,15 @@ async def trigger_search_custom(request: Request):
         if active_text:
              user_profile_dict['resume_text'] = active_text
              
-        alerts_raw = abhi.generate_job_alerts(user_profile_dict)
+        existing_notifs = get_notifications(email)
+        existing_jobs = [f"{n['job_title']} at {n['company']}" for n in existing_notifs] if existing_notifs else []
+             
+        alerts_raw = abhi.generate_job_alerts(user_profile_dict, existing_jobs)
         alerts_data = json.loads(alerts_raw)
         
         if "error" in alerts_data:
-            return JSONResponse({"error": alerts_data["error"]}, status_code=500)
+            print(f"[ERROR] Manual Search failed: {alerts_data['error']}")
+            return JSONResponse({"error": alerts_data["error"]}, status_code=503)
             
         jobs = alerts_data.get("jobs", [])
         if not isinstance(jobs, list):
@@ -168,6 +174,12 @@ async def analyzer_page(request: Request):
     if not user: return RedirectResponse(url="/login")
     return templates.TemplateResponse("SkillAnalyzer.html", {"request": request, "user": user})
 
+@app.get("/ats-checker")
+async def ats_checker_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse("ATSChecker.html", {"request": request, "user": user})
+
 @app.get("/career-architect")
 async def career_architect_page(request: Request):
     user = request.session.get("user")
@@ -187,17 +199,24 @@ async def generate_roadmap_api(request: Request):
     
     if preview:
         try:
-            return JSONResponse(json.loads(roadmap_json))
+            parsed = json.loads(roadmap_json)
+            if "error" in parsed:
+                return JSONResponse(parsed, status_code=503)
+            return JSONResponse(parsed)
         except json.JSONDecodeError:
-            return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, 500)
+            return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, status_code=500)
     
     try:
+        parsed = json.loads(roadmap_json)
+        if "error" in parsed:
+            return JSONResponse(parsed, status_code=503)
+
         if save_roadmap(user["email"], domain, roadmap_json):
-            return JSONResponse(json.loads(roadmap_json))
+            return JSONResponse(parsed)
         else:
-            return JSONResponse({"error": "Failed to save roadmap"}, 500)
+            return JSONResponse({"error": "Failed to save roadmap"}, status_code=500)
     except json.JSONDecodeError:
-         return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, 500)
+         return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, status_code=500)
 
 @app.post("/api/career/roadmap/save")
 async def save_roadmap_endpoint(request: Request):
@@ -285,10 +304,26 @@ async def trigger_job_search(email):
             user_profile_dict = dict(user_data)
             user_profile_dict['resume_text'] = active_text 
             
-            alerts_json = abhi.generate_job_alerts(user_profile_dict)
-            alerts = json.loads(alerts_json)
-            for alert in alerts:
-                add_notification(email, alert.get("job_title"), alert.get("company"), alert.get("match_score"), alert.get("reason"), alert.get("apply_link"))
+            existing_notifs = get_notifications(email)
+            existing_jobs = [f"{n['job_title']} at {n['company']}" for n in existing_notifs] if existing_notifs else []
+            
+            alerts_raw = abhi.generate_job_alerts(user_profile_dict, existing_jobs)
+            alerts_data = json.loads(alerts_raw)
+            
+            if "error" in alerts_data:
+                print(f"[ERROR] Job search failed: {alerts_data['error']}")
+                return False
+
+            jobs = alerts_data.get("jobs", [])
+            for job in jobs:
+                add_notification(
+                    email, 
+                    job.get("job_title"), 
+                    job.get("company"), 
+                    job.get("match_score"), 
+                    job.get("reason"), 
+                    job.get("apply_link")
+                )
             print(f"DEBUG: Job Search Triggered for {email}")
             return True
     except Exception as e:
@@ -400,8 +435,18 @@ async def get_notifications_api(request: Request):
     user_session = request.session.get("user")
     if not user_session: return JSONResponse({"notifications": []})
     
+    # Auto-cleanup old jobs (>5 days)
+    cleanup_old_notifications()
+    
     email = user_session["email"]
-    notifications = get_notifications(email)
+    
+    # Check if we only want today's jobs (requested for dashboard)
+    is_today = request.query_params.get("today") == "true"
+    
+    if is_today:
+        notifications = get_today_notifications(email)
+    else:
+        notifications = get_notifications(email)
     
     notif_list = []
     for n in notifications:
@@ -412,7 +457,7 @@ async def get_notifications_api(request: Request):
             "match_score": n["match_score"],
             "reason": n["reason"],
             "apply_link": n["apply_link"],
-            "created_at": n["created_at"],
+            "created_at": str(n["created_at"]),
             "is_read": n["is_read"]
         })
         
@@ -462,21 +507,57 @@ async def analyze_gap_endpoint(data: dict = Body(...)):
     jd = data.get("jd_text", "")
     raw_ai_response = abhi.analyze_skill_gap(resume, jd)
     try:
-        clean_json = raw_ai_response.replace("```json", "").replace("```", "").strip()
-        parsed_json = json.loads(clean_json)
+        parsed_json = json.loads(raw_ai_response)
+        if "error" in parsed_json:
+            return JSONResponse(content={"match_score": 0, "skill_scores": {}, "missing_skills": [], "advice": f"AI Rate Limit: {parsed_json['error']}", "error_msg": parsed_json['error']})
         return JSONResponse(content=parsed_json)
-    except:
+    except Exception as e:
+        print(f"[ERROR] analyze_skill_gap failed to parse: {e}")
         return JSONResponse(content={"match_score": 0, "skill_scores": {}, "missing_skills": [], "advice": "Error processing AI data."})
 
+@app.post("/api/ats/analyze")
+async def analyze_ats_endpoint(data: dict = Body(...)):
+    resume = data.get("resume_text", "")
+    jd = data.get("jd_text", "")
+    raw_ai_response = abhi.check_ats_score(resume, jd)
+    try:
+        parsed_json = json.loads(raw_ai_response)
+        return JSONResponse(content=parsed_json)
+    except Exception as e:
+        print(f"[ERROR] ATS analysis failed: {e}")
+        return JSONResponse(content={"error": "Failed to parse AI response"}, status_code=500)
+
 @app.post("/ask")
-async def ask_abhi(query: str = Form(...)):
+async def ask_abhi_endpoint(query: str = Form(...)):
     response_text = abhi.ask_abhi(query)
+    try:
+        parsed = json.loads(response_text)
+        if "error" in parsed:
+             return JSONResponse(content={"response": json.dumps({"display_content": f"**System Notice:** {parsed['error']}"})})
+    except:
+        pass
     return JSONResponse(content={"response": response_text})
 
 @app.post("/generate-resume")
 async def generate_resume_endpoint(data: dict = Body(...)):
-    prompt = f"Architect a professional resume for {data['name']} based on this data: {data['existing_resume']} optimized for this JD: {data['job_desc']}"
+    prompt = (
+        f"Architect a professional, premium resume for {data['name']} using the provided data: {data['existing_resume']}. "
+        f"Optimize it for this Job Description: {data['job_desc']}. "
+        f"STRICT CONTENT RULES: "
+        f"1. HEADER: You MUST start the content with '# {data['name']}' prominently at the top. "
+        f"2. SECTIONS: Provide SEPARATE headings for 'Education' and 'Certifications'. DO NOT combine them into one section. "
+        f"3. PAGE LIMIT: The entire resume MUST fit on strictly one A4 page. "
+        f"4. BREVITY: Use extremely concise bullet points (max 3 per role/project). "
+        f"5. CONTACT: Include placeholders or extracted Email, Phone, and LinkedIn below the name header. "
+        f"6. STRUCTURE: Use professional, high-density Markdown."
+    )
     result = abhi.ask_abhi(prompt)
+    try:
+        parsed = json.loads(result)
+        if "error" in parsed:
+            return JSONResponse(content={"resume_content": json.dumps({"display_content": f"**System Notice:** {parsed['error']}"})})
+    except:
+        pass
     return {"resume_content": result}
 
 @app.get("/learn", response_class=HTMLResponse)
@@ -532,10 +613,19 @@ async def get_day_content_api(request: Request, course_id: int):
     
     content = get_day_content(course_id, week, day)
     
-    if not content:
+    # If content exists but is an AI error message, or content doesn't exist
+    if not content or "AI is temporarily overloaded" in content or "Rate Limit" in content:
         course = get_course_details(course_id)
-        content = abhi.generate_day_content(course["topic"], title)
-        save_day_content(course_id, week, day, content)
+        new_content = abhi.generate_day_content(course["topic"], title)
+        
+        # Only save if it's NOT an error message
+        if "AI is temporarily overloaded" not in new_content and "Rate Limit" not in new_content:
+            save_day_content(course_id, week, day, new_content)
+            return JSONResponse({"content": new_content})
+        else:
+            # If it's still an error, return it but don't overwrite if we already had something else (unlikely here)
+            # but return a 503 so the frontend can retry if implemented
+            return JSONResponse({"content": new_content, "error": True}, status_code=503)
         
     return JSONResponse({"content": content})
 
@@ -574,8 +664,8 @@ async def submit_quiz_api(request: Request, course_id: int):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 9000))  
-    print(f"🚀 Starting Server on http://127.0.0.1:{port} with Auto-Reload...")
+    print(f"Starting Server on http://127.0.0.1:{port} with Auto-Reload...")
 
-    #uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True)
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True)
+    #uvicorn.run(app, host="0.0.0.0", port=port)
 

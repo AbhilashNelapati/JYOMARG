@@ -109,10 +109,30 @@ def init_db():
     create_resumes_table()
     create_learn_tables()
     create_roadmaps_table()
+    create_ai_cache_table()
     
     migrate_columns()
     
     print("[DB] Database initialized successfully.")
+
+def create_ai_cache_table():
+    sql = """
+        CREATE TABLE IF NOT EXISTS ai_cache (
+            prompt_hash TEXT PRIMARY KEY,
+            response_text TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    execute_query(sql, commit=True)
+
+def get_cached_ai_response(prompt_hash):
+    sql = "SELECT response_text FROM ai_cache WHERE prompt_hash = ?"
+    res = execute_query(sql, (prompt_hash,), fetch_mode='one')
+    return res['response_text'] if res else None
+
+def save_ai_response_to_cache(prompt_hash, response_text):
+    sql = "INSERT OR REPLACE INTO ai_cache (prompt_hash, response_text) VALUES (?, ?)"
+    execute_query(sql, (prompt_hash, response_text), commit=True)
 
 def create_learn_tables():
     courses_sql = """
@@ -289,6 +309,25 @@ def get_notifications(user_email, limit=20):
     """
     res = execute_query(sql, (user_email, limit), fetch_mode='all')
     return res if res else []
+
+def get_today_notifications(user_email):
+    # For SQLite: date(created_at) = date('now')
+    # For Postgres: created_at::date = current_date
+    if DATABASE_URL:
+        sql = "SELECT * FROM notifications WHERE user_email = ? AND created_at::date = current_date ORDER BY created_at DESC"
+    else:
+        sql = "SELECT * FROM notifications WHERE user_email = ? AND date(created_at) = date('now') ORDER BY created_at DESC"
+    
+    res = execute_query(sql, (user_email,), fetch_mode='all')
+    return res if res else []
+
+def cleanup_old_notifications():
+    # Delete notifications older than 5 days
+    if DATABASE_URL:
+        sql = "DELETE FROM notifications WHERE created_at < current_date - interval '5 days'"
+    else:
+        sql = "DELETE FROM notifications WHERE created_at < datetime('now', '-5 days')"
+    execute_query(sql, commit=True)
 
 def mark_notifications_read(user_email):
     sql = "UPDATE notifications SET is_read = 1 WHERE user_email = ?"

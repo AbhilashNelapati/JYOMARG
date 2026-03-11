@@ -9,21 +9,37 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap"
         rel="stylesheet">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
-            --primary-bg: #050a14;
-            --secondary-bg: #0a1124;
-            --glass: rgba(255, 255, 255, 0.05);
-            --neon-blue: #00f3ff;
-            --neon-green: #0aff68;
-            --neon-purple: #bd00ff;
+            /* Synchronized with Dashboard */
+            --bg-deep: #050510;
+            --bg-panel: rgba(20, 20, 35, 0.6);
+            --primary-neon: #00f3ff;
+            --secondary-neon: #bc13fe;
+            --accent-success: #0aff68;
+            --accent-danger: #ff2a6d;
             --text-main: #e0e6ed;
             --text-dim: #94a3b8;
-            
-            --accent-danger: #ff4d4d;
+            --sidebar-width: 280px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glow-text: 0 0 10px rgba(0, 243, 255, 0.6);
+
+            /* Learn Page Specifics (Mapped to Sync Variables) */
+            --primary-bg: var(--bg-deep);
+            --secondary-bg: var(--bg-panel);
+            --glass: rgba(255, 255, 255, 0.05);
+            --neon-blue: var(--primary-neon);
+            --neon-green: var(--accent-success);
+            --neon-purple: var(--secondary-neon);
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-blue) var(--primary-bg);
         }
 
         body {
@@ -33,17 +49,17 @@
             margin: 0;
             overflow: hidden;
             display: flex;
+            height: 100vh;
         }
 
-        
+
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-width);
             height: 100vh;
             background: rgba(5, 5, 16, 0.85);
-            
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: var(--glass-border);
             display: flex;
             flex-direction: column;
             padding: 30px 20px;
@@ -52,7 +68,6 @@
             box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
         }
 
-        
         .brand-box {
             margin-bottom: 50px;
             display: flex;
@@ -65,20 +80,19 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 1.8rem;
             font-weight: 900;
-            background: linear-gradient(to right, #fff, var(--neon-blue));
+            background: linear-gradient(to right, #fff, var(--primary-neon));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+            text-shadow: var(--glow-text);
             letter-spacing: 2px;
-            margin-bottom: 0;
-            display: block;
+            margin: 0;
         }
 
         .brand-icon {
             font-size: 1.8rem;
-            color: var(--neon-blue);
-            filter: drop-shadow(0 0 8px var(--neon-blue));
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 8px var(--primary-neon));
             animation: floatLogo 3s ease-in-out infinite;
         }
 
@@ -94,7 +108,6 @@
             }
         }
 
-        
         .nav-menu {
             list-style: none;
             padding: 0;
@@ -107,8 +120,6 @@
 
         .nav-item {
             position: relative;
-            width: 100%;
-            margin-bottom: 0;
         }
 
         .nav-link {
@@ -127,7 +138,6 @@
             overflow: hidden;
         }
 
-        
         .nav-link::before {
             content: '';
             position: absolute;
@@ -146,7 +156,6 @@
             border-color: rgba(0, 243, 255, 0.3);
             text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
             padding-left: 25px;
-            
         }
 
         .nav-link:hover::before {
@@ -158,19 +167,17 @@
             text-align: center;
             font-size: 1.2rem;
             transition: 0.3s;
-            min-width: auto;
         }
 
         .nav-link:hover i {
-            color: var(--neon-blue);
-            filter: drop-shadow(0 0 5px var(--neon-blue));
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 5px var(--primary-neon));
         }
 
-        
         .nav-link.active {
             background: rgba(0, 243, 255, 0.15);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
             box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);
         }
 
@@ -180,20 +187,14 @@
             right: 15px;
             width: 6px;
             height: 6px;
-            background: var(--neon-blue);
+            background: var(--primary-neon);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--neon-blue);
+            box-shadow: 0 0 10px var(--primary-neon);
         }
 
-        .nav-link span {
-            opacity: 1;
-            margin-left: 0;
-        }
-
-        
         .sidebar-footer {
             margin-top: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: var(--glass-border);
             padding-top: 25px;
         }
 
@@ -204,7 +205,7 @@
             padding: 15px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: var(--glass-border);
             transition: 0.3s;
             cursor: pointer;
             text-decoration: none;
@@ -223,7 +224,7 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            border: 2px solid var(--neon-purple);
+            border: 2px solid var(--secondary-neon);
             object-fit: cover;
         }
 
@@ -233,10 +234,10 @@
             right: 0;
             width: 10px;
             height: 10px;
-            background: var(--neon-green);
+            background: var(--accent-success);
             border-radius: 50%;
-            border: 2px solid var(--primary-bg);
-            box-shadow: 0 0 5px var(--neon-green);
+            border: 2px solid var(--bg-deep);
+            box-shadow: 0 0 5px var(--accent-success);
         }
 
         .user-info {
@@ -252,7 +253,7 @@
         }
 
         .user-role {
-            color: var(--neon-blue);
+            color: var(--primary-neon);
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -276,18 +277,18 @@
             background: rgba(255, 42, 109, 0.1);
         }
 
-        
+
         .main-content {
             flex: 1;
             padding: 30px;
             padding-bottom: 80px;
-            
+
             height: 100vh;
             overflow-y: auto;
             position: relative;
         }
 
-        
+
         .view-section {
             display: none;
             animation: fadeIn 0.5s ease;
@@ -309,7 +310,7 @@
             }
         }
 
-        
+
         .header-section {
             display: flex;
             justify-content: space-between;
@@ -415,7 +416,7 @@
             color: #fff;
         }
 
-        
+
         .player-container {
             display: flex;
             height: 90vh;
@@ -449,14 +450,14 @@
             list-style: none;
             padding-left: 10px;
             display: none;
-            
+
         }
 
         .day-list.open {
             display: block;
         }
 
-        
+
         .carousel-wrapper {
             position: relative;
             display: flex;
@@ -485,11 +486,11 @@
             align-items: center;
             justify-content: space-between;
             min-height: 210px;
-            
+
             padding-bottom: 15px;
 
-            
-            
+
+
             min-width: 220px;
             flex: 0 0 auto;
         }
@@ -601,7 +602,7 @@
             position: relative;
         }
 
-        
+
         .markdown-body h1,
         .markdown-body h2 {
             color: var(--neon-blue);
@@ -634,7 +635,7 @@
             padding-top: 20px;
         }
 
-        
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -694,7 +695,7 @@
 
 <body>
 
-    
+
     <nav class="sidebar">
         <div class="brand-box">
             <i class="fas fa-atom brand-icon"></i>
@@ -726,6 +727,7 @@
                     <span>LEARN</span>
                 </a>
             </li>
+
             <li class="nav-item">
                 <a href="/career-architect" class="nav-link">
                     <i class="fas fa-drafting-compass"></i>
@@ -746,15 +748,15 @@
                 </div>
             </a>
             <a href="/logout" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Disconnect System
+                <i class="fas fa-power-off"></i> Disconnect System
             </a>
         </div>
     </nav>
 
-    
+
     <div class="main-content">
 
-        
+
         <div id="view-dashboard" class="view-section active">
             <div class="header-section">
                 <h1><i class="fas fa-graduation-cap" style="color: var(--neon-green);"></i> My Learning Journey</h1>
@@ -767,7 +769,7 @@
                 <button class="btn-neon" onclick="generateCourse()">Start Learning</button>
             </div>
 
-            
+
             <h2
                 style="margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
                 Explore Skill Paths</h2>
@@ -776,7 +778,7 @@
                         class="fas fa-chevron-left"></i></button>
 
                 <div class="skills-carousel" id="skillsGrid">
-                    
+
                     <div class="skill-card">
                         <i class="fab fa-python skill-icon" style="color: #306998;"></i>
                         <div class="skill-name">Python</div>
@@ -936,12 +938,12 @@
             <h2 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
                 Enrolled Courses</h2>
             <div class="courses-grid" id="coursesGrid">
-                
+
                 <p style="color: #777;">Loading courses...</p>
             </div>
         </div>
 
-        
+
         <div id="view-player" class="view-section">
             <button onclick="switchView('dashboard')"
                 style="background:none; border:none; color: #aaa; cursor:pointer; margin-bottom: 10px;">
@@ -951,19 +953,19 @@
             <h1 id="player-title" style="color: var(--neon-blue);">Course Title</h1>
 
             <div class="player-container">
-                
+
                 <div class="player-sidebar" id="syllabus-container">
-                    
+
                 </div>
 
-                
+
                 <div class="player-content">
                     <div id="content-loader" style="display:none; text-align: center; padding-top: 50px;">
                         <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--neon-blue);"></i>
                         <p>ABHI is generating content...</p>
                     </div>
                     <div id="markdown-content" class="markdown-body">
-                        
+
                     </div>
 
                     <div class="player-footer">
@@ -982,7 +984,7 @@
 
     </div>
 
-    
+
     <div id="quiz-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="quiz-title" style="color: var(--neon-purple); text-align: center;">Weekly Assessment</h2>
@@ -1209,16 +1211,55 @@
             currentWeek = week;
             currentDay = day;
 
-            document.getElementById('content-loader').style.display = 'block';
-            document.getElementById('markdown-content').innerHTML = '';
+            const contentArea = document.getElementById('markdown-content');
+            const loader = document.getElementById('content-loader');
+
+            loader.style.display = 'block';
+            contentArea.innerHTML = '';
             document.getElementById('btn-take-quiz').style.display = 'none';
-            document.getElementById('btn-complete-day').style.display = 'block';
+            document.getElementById('btn-complete-day').style.display = 'none';
 
-            const res = await fetch(`/api/learn/course/${currentCourseId}/content?week=${week}&day=${day}&title=${encodeURIComponent(title || 'Lesson')}`);
-            const data = await res.json();
+            let attempts = 0;
+            const maxAttempts = 2;
 
-            document.getElementById('content-loader').style.display = 'none';
-            document.getElementById('markdown-content').innerHTML = marked.parse(data.content);
+            async function fetchContent() {
+                try {
+                    const res = await fetch(`/api/learn/course/${currentCourseId}/content?week=${week}&day=${day}&title=${encodeURIComponent(title || 'Lesson')}`);
+                    const data = await res.json();
+
+                    // If it's a rate limit error, retry automatically
+                    if ((res.status === 503 || (data.content && data.content.includes("Rate Limit"))) && attempts < maxAttempts) {
+                        attempts++;
+                        console.log(`[LEARN] Content Rate Limit. Retry ${attempts}/${maxAttempts}...`);
+                        setTimeout(fetchContent, attempts * 4000);
+                        return;
+                    }
+
+                    loader.style.display = 'none';
+
+                    if (data.content && (data.content.includes("AI is temporarily overloaded") || data.content.includes("Rate Limit"))) {
+                        contentArea.innerHTML = `
+                            <div style="text-align:center; padding: 40px; border: 1px dashed var(--neon-blue); border-radius: 12px; background: rgba(0,0,0,0.2);">
+                                <i class="fas fa-robot" style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 20px;"></i>
+                                <h3 style="color: var(--neon-blue);">AI Architecture Core Busy</h3>
+                                <p style="color: #aaa;">Abhi is currently constructing too many lessons. Give him a few seconds to catch his breath.</p>
+                                <button onclick="loadContent(${week}, ${day}, '${topic}', '${title.replace(/'/g, "\\'")}')" class="btn-neon" style="margin-top:20px;">
+                                    <i class="fas fa-sync-alt"></i> Try Again
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        contentArea.innerHTML = marked.parse(data.content || "No content found for this day.");
+                        document.getElementById('btn-complete-day').style.display = 'block';
+                        contentArea.scrollTop = 0;
+                    }
+                } catch (err) {
+                    loader.style.display = 'none';
+                    contentArea.innerHTML = `<p style="color: red;">Failed to load content. Check your connection.</p>`;
+                }
+            }
+
+            fetchContent();
         }
 
         async function completeDay() {

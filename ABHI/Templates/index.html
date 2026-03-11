@@ -1,63 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>ABHI - Artificial Brain For Human Intelligence</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
     <style>
-        body { background-color: #050a14; color: #00d4ff; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; overflow-x: hidden; }
-                /* Sidebar Styling */
-        .sidebar { 
-            width: 260px; 
-            background: rgba(0,0,0,0.6); 
-            border-right: 1px solid rgba(0,212,255,0.1); 
-            padding: 20px; 
-            display: flex; 
+        body {
+            background-color: #050a14;
+            color: #00d4ff;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.6);
+            border-right: 1px solid rgba(0, 212, 255, 0.1);
+            padding: 20px;
+            display: flex;
             flex-direction: column;
             backdrop-filter: blur(10px);
         }
 
-        .sidebar h2 { color: var(--neon-blue); text-align: center; font-size: 1.5rem; letter-spacing: 2px; }
-        .avatar-box { margin-top: 20px; }
-        .avatar-img { width: 160px; height: 160px; border-radius: 50%; border: 3px solid #00d4ff; box-shadow: 0 0 15px #00d4ff; transition: 0.3s; }
-        
+        .sidebar h2 {
+            color: var(--neon-blue);
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .avatar-box {
+            margin-top: 20px;
+        }
+
+        .avatar-img {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 3px solid #00d4ff;
+            box-shadow: 0 0 15px #00d4ff;
+            transition: 0.3s;
+        }
+
         /* Talking/Pulse Animation */
-        .speaking { animation: pulse-glow 0.6s infinite alternate; transform: scale(1.05); }
-        @keyframes pulse-glow { from { box-shadow: 0 0 15px #00d4ff; } to { box-shadow: 0 0 40px #00d4ff; } }
+        .speaking {
+            animation: pulse-glow 0.6s infinite alternate;
+            transform: scale(1.05);
+        }
 
-        .control-panel { margin-top: 30px; }
-        input { padding: 12px; width: 400px; border-radius: 25px; border: 1px solid #00d4ff; background: rgba(0,0,0,0.5); color: white; outline: none; font-size: 16px; }
-        .btn { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
-        .btn-execute { background: #00d4ff; color: #000; }
-        .btn-mic { background: #ff4b2b; color: #fff; }
-        .listening { background: #2bff88 !important; animation: blink 1s infinite; }
+        @keyframes pulse-glow {
+            from {
+                box-shadow: 0 0 15px #00d4ff;
+            }
 
-        @keyframes blink { 50% { opacity: 0.5; } }
+            to {
+                box-shadow: 0 0 40px #00d4ff;
+            }
+        }
+
+        .control-panel {
+            margin-top: 30px;
+        }
+
+        input {
+            padding: 12px;
+            width: 400px;
+            border-radius: 25px;
+            border: 1px solid #00d4ff;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: 0.3s;
+        }
+
+        .btn-execute {
+            background: #00d4ff;
+            color: #000;
+        }
+
+        .btn-mic {
+            background: #ff4b2b;
+            color: #fff;
+        }
+
+        .listening {
+            background: #2bff88 !important;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.5;
+            }
+        }
 
         /* AI Output Display Box */
-        #response-display { margin: 30px auto; padding: 25px; max-width: 900px; background: rgba(0, 212, 255, 0.05); border-radius: 15px; border: 1px solid rgba(0, 212, 255, 0.2); text-align: left; color: #fff; line-height: 1.6; min-height: 100px; }
-        
+        #response-display {
+            margin: 30px auto;
+            padding: 25px;
+            max-width: 900px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: left;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100px;
+        }
+
         /* Table Styling for AI Content */
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #0a111e; }
-        th, td { border: 1px solid #00d4ff; padding: 12px; text-align: left; }
-        th { background-color: #00d4ff; color: #000; }
-        h1, h2, h3 { color: #00d4ff; }
-        a { color: #2bff88; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #0a111e;
+        }
+
+        th,
+        td {
+            border: 1px solid #00d4ff;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #00d4ff;
+            color: #000;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #00d4ff;
+        }
+
+        a {
+            color: #2bff88;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="avatar-box">
-    <img src="/ABHI/static/images/Avatar.png"
-         id="abhi-avatar"
-         class="avatar-img"
-         alt="ABHI">
+        <img src="/static/images/Avatar.png" id="abhi-avatar" class="avatar-img" alt="ABHI">
     </div>
 
 
 
-        <h1>A.B.H.I : Artificial Brain For Human Intelligence</h1>
-        <h2>Advanced Career Assistant</h2>
+    <h1>A.B.H.I : Artificial Brain For Human Intelligence</h1>
+    <h2>Advanced Career Assistant</h2>
     </div>
 
     <div class="control-panel">
@@ -69,7 +176,7 @@
     <div id="response-display">Ready to help you build your path with JYOMARG...</div>
 
     <script>
-        const converter = new showdown.Converter({tables: true, strikethrough: true});
+        const converter = new showdown.Converter({ tables: true, strikethrough: true });
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'en-US';
 
@@ -114,7 +221,7 @@
             if (!query) return;
 
             const lowerQuery = query.toLowerCase();
-            
+
             // --- 1. పర్సనల్ ఇంట్రడక్షన్ లాజిక్ ---
             // కేవలం విష్ చేసినప్పుడు లేదా తన గురించి అడిగినప్పుడు మాత్రమే పరిచయం
             const introTriggers = ["hi", "hello", "hey", "who are you", "what is abhi", "introduce yourself"];
@@ -138,19 +245,20 @@
                 method: 'POST',
                 body: params
             })
-            .then(res => res.json())
-            .then(data => {
-                // పూర్తి మార్క్ డౌన్ సమాధానాన్ని HTML/Table రూపంలో చూపిస్తుంది
-                display.innerHTML = converter.makeHtml(data.response);
-                
-                // వాయిస్ లో కేవలం క్లుప్తమైన సారాంశం (Summary) మాత్రమే చెబుతుంది
-                const voiceSummary = summarizeForVoice(data.response);
-                speakResponse(voiceSummary);
-            })
-            .catch(err => {
-                display.innerHTML = "<p style='color:red'>Error: Unable to reach ABHI. Please check your connection.</p>";
-            });
+                .then(res => res.json())
+                .then(data => {
+                    // పూర్తి మార్క్ డౌన్ సమాధానాన్ని HTML/Table రూపంలో చూపిస్తుంది
+                    display.innerHTML = converter.makeHtml(data.response);
+
+                    // వాయిస్ లో కేవలం క్లుప్తమైన సారాంశం (Summary) మాత్రమే చెబుతుంది
+                    const voiceSummary = summarizeForVoice(data.response);
+                    speakResponse(voiceSummary);
+                })
+                .catch(err => {
+                    display.innerHTML = "<p style='color:red'>Error: Unable to reach ABHI. Please check your connection.</p>";
+                });
         }
     </script>
 </body>
+
 </html>

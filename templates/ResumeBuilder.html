@@ -6,44 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Architect | JYOMARG</title>
 
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
 
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
         :root {
-            
+
             --bg-deep: #050510;
             --bg-panel: rgba(20, 20, 35, 0.6);
             --primary-neon: #00f3ff;
-            
+
             --secondary-neon: #bc13fe;
-            
+
             --accent-success: #0aff68;
-            
+
             --accent-danger: #ff2a6d;
-            
+
             --text-main: #e0e6ed;
             --text-dim: #94a3b8;
 
-            
+
             --neon-blue: var(--primary-neon);
             --neon-green: var(--accent-success);
             --glass: rgba(255, 255, 255, 0.05);
 
-            
+
             --glass-border: 1px solid rgba(255, 255, 255, 0.08);
             --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
             --sidebar-width: 280px;
@@ -72,12 +72,12 @@
             overflow: hidden;
         }
 
-        
+
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
             background: rgba(5, 5, 16, 0.85);
-            
+
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-right: var(--glass-border);
@@ -89,7 +89,7 @@
             box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
         }
 
-        
+
         .brand-box {
             margin-bottom: 50px;
             display: flex;
@@ -129,7 +129,7 @@
             }
         }
 
-        
+
         .nav-menu {
             list-style: none;
             padding: 0;
@@ -160,7 +160,7 @@
             overflow: hidden;
         }
 
-        
+
         .nav-link::before {
             content: '';
             position: absolute;
@@ -179,7 +179,7 @@
             border-color: rgba(0, 243, 255, 0.3);
             text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
             padding-left: 25px;
-            
+
         }
 
         .nav-link:hover::before {
@@ -198,7 +198,7 @@
             filter: drop-shadow(0 0 5px var(--primary-neon));
         }
 
-        
+
         .nav-link.active {
             background: rgba(0, 243, 255, 0.15);
             border: 1px solid var(--primary-neon);
@@ -217,7 +217,7 @@
             box-shadow: 0 0 10px var(--primary-neon);
         }
 
-        
+
         .sidebar-footer {
             margin-top: auto;
             border-top: var(--glass-border);
@@ -303,12 +303,12 @@
             background: rgba(255, 42, 109, 0.1);
         }
 
-        
+
         .main-wrapper {
             flex: 1;
             position: relative;
             overflow: hidden;
-            
+
             display: flex;
             flex-direction: column;
         }
@@ -320,7 +320,7 @@
             scroll-behavior: smooth;
         }
 
-        
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -339,7 +339,7 @@
             background: var(--primary-neon);
         }
 
-        
+
         .glass-panel {
             background: rgba(20, 20, 35, 0.6);
             backdrop-filter: blur(16px);
@@ -418,7 +418,7 @@
             box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
         }
 
-        
+
         .loader-orbit {
             width: 50px;
             height: 50px;
@@ -435,7 +435,7 @@
             }
         }
 
-        
+
         .architect-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -525,24 +525,153 @@
         .resume-preview {
             background: #fff;
             color: #000;
-            padding: 40px;
-            border-radius: 5px;
-            min-height: 600px;
-            margin-top: 30px;
+            padding: 30px 45px;
+            border-radius: 0;
+            min-height: 29.7cm;
+            /* A4 Height */
+            width: 21cm;
+            /* A4 Width */
+            margin: 20px auto;
             font-family: 'Times New Roman', serif;
             display: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            line-height: 1.2;
+            word-wrap: break-word;
         }
 
-        .btn-download {
+        .resume-preview h1 {
+            font-size: 24pt !important;
+            margin-bottom: 8px !important;
+            text-align: center;
+            border: none !important;
+            font-weight: 900 !important;
+            color: #000 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .resume-preview h2,
+        .resume-preview h3,
+        .resume-preview h4,
+        .resume-preview h5,
+        .resume-preview h6 {
+            color: #000 !important;
+            font-family: 'Times New Roman', serif;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            break-after: avoid;
+            page-break-after: avoid;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12pt !important;
+            letter-spacing: 0.5px;
+        }
+
+        /* First content element should have 0 margin-top to avoid top gap in PDF */
+        .resume-preview>*:first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* Keep headers with the following element naturally */
+        .resume-preview h1+*,
+        .resume-preview h2+*,
+        .resume-preview h3+* {
+            page-break-before: avoid;
+            break-before: avoid;
+        }
+
+        /* Prevent breaking inside specific items */
+        .resume-preview p,
+        .resume-preview li {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-bottom: 2px;
+            margin-top: 1px;
+            line-height: 1.25;
+            font-size: 10pt;
+        }
+
+        .resume-preview a {
+            color: #000;
+            text-decoration: underline;
+            cursor: pointer;
+            pointer-events: auto !important;
+        }
+
+        .resume-preview ul {
+            padding-left: 20px;
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+
+        /* --- PDF Generation Specifics --- */
+        @media print {
+            .resume-preview {
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            /* Tighten up everything for single page fit */
+            .resume-preview h1 {
+                margin-top: 0 !important;
+                font-size: 20pt !important;
+            }
+
+            .resume-preview h2 {
+                margin-top: 10pt !important;
+                font-size: 14pt !important;
+            }
+
+            .resume-preview h3 {
+                margin-top: 8pt !important;
+                font-size: 12pt !important;
+            }
+
+            .resume-preview p,
+            .resume-preview li {
+                font-size: 10pt !important;
+                line-height: 1.2 !important;
+                margin-bottom: 2pt !important;
+            }
+
+            /* Hide non-printable elements if any */
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .btn-download,
+        .btn-edit-preview {
             display: none;
             margin-top: 20px;
-            background: var(--neon-green);
-            color: #000;
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn-download {
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        .btn-edit-preview {
+            background: var(--neon-blue);
+            color: #000;
+        }
+
+        .resume-preview[contenteditable="true"] {
+            outline: 2px dashed var(--neon-blue);
+            background: white !important;
+            color: black !important;
         }
 
         .loader {
@@ -558,7 +687,7 @@
 
 <body>
 
-    
+
     <nav class="sidebar">
         <div class="brand-box">
             <i class="fas fa-atom brand-icon"></i>
@@ -574,7 +703,7 @@
             </li>
             <li class="nav-item">
                 <a href="/abhi" class="nav-link">
-                    <i class="fas fa-microchip"></i> 
+                    <i class="fas fa-microchip"></i>
                     <span>ABHI Core</span>
                 </a>
             </li>
@@ -582,6 +711,12 @@
                 <a href="/tutor" class="nav-link">
                     <i class="fas fa-graduation-cap"></i>
                     <span>AI Tutor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/learn" class="nav-link">
+                    <i class="fas fa-book-reader"></i>
+                    <span>LEARN</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -604,12 +739,12 @@
                 </div>
             </a>
             <a href="/logout" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Disconnect System
+                <i class="fas fa-power-off"></i> Disconnect System
             </a>
         </div>
     </nav>
 
-    
+
     <main class="main-wrapper">
         <div class="content-scrollable">
 
@@ -619,7 +754,7 @@
             </div>
 
             <div class="architect-grid">
-                
+
                 <div class="input-card">
                     <div class="card-header">
                         <i class="fas fa-file-user"></i> Source Data
@@ -632,7 +767,7 @@
 
                     <div class="form-group">
                         <label>Upload Existing Resume</label>
-                        <div class="upload-box" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-box" id="upload-box" onclick="document.getElementById('file-input').click()">
                             <div class="upload-icon-wrapper">
                                 <i class="fas fa-cloud-upload-alt"></i>
                             </div>
@@ -640,16 +775,29 @@
                             <input type="file" id="file-input" hidden accept=".pdf,.docx,.txt"
                                 onchange="processIncomingFile(this)">
                         </div>
+                        <div id="file-actions"
+                            style="display: none; margin-top: 10px; text-align: right; gap: 10px; justify-content: flex-end;">
+                            <button id="manual-edit-btn" class="btn-neon"
+                                style="font-size: 0.7rem; padding: 5px 10px; color: var(--neon-blue); border-color: var(--neon-blue);"
+                                onclick="toggleManualEdit()">
+                                <i class="fas fa-edit"></i> Manual Edit
+                            </button>
+                            <button class="btn-neon"
+                                style="font-size: 0.7rem; padding: 5px 10px; color: var(--accent-danger); border-color: var(--accent-danger);"
+                                onclick="resetFileInput(event)">
+                                <i class="fas fa-times"></i> Clear File
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Or Paste Resume Content</label>
+                        <label id="manual-label">Details Enter (Manual)</label>
                         <textarea id="resume-text" rows="6"
-                            placeholder="Paste your resume content here if you don't have a file..."></textarea>
+                            placeholder="Enter your career details, skills, and experience here..."></textarea>
                     </div>
                 </div>
 
-                
+
                 <div class="input-card">
                     <div class="card-header" style="color: var(--neon-green);">
                         <i class="fas fa-bullseye"></i> Target Role
@@ -677,9 +825,14 @@
 
             <div id="resume-output" class="resume-preview"></div>
 
-            <button id="download-btn" class="btn-download" onclick="generatePDF()">
-                <i class="fas fa-file-pdf"></i> Download Optimized PDF
-            </button>
+            <div class="preview-actions" style="margin-top: 20px; text-align: center; margin-bottom: 50px;">
+                <button id="edit-preview-btn" class="btn-edit-preview" onclick="toggleLiveEdit()">
+                    <i class="fas fa-edit"></i> Edit Resume Directly
+                </button>
+                <button id="download-btn" class="btn-download" onclick="generatePDF()">
+                    <i class="fas fa-file-pdf"></i> Download Optimized PDF
+                </button>
+            </div>
 
         </div>
     </main>
@@ -716,14 +869,85 @@
         async function processIncomingFile(input) {
             const file = input.files[0];
             if (!file) return;
-            document.getElementById('file-status').innerText = "Loaded: " + file.name;
+
+            const fileStatus = document.getElementById('file-status');
+            const resumeText = document.getElementById('resume-text');
+            const manualLabel = document.getElementById('manual-label');
+            const fileActions = document.getElementById('file-actions');
+            const uploadBox = document.getElementById('upload-box');
+
+            fileStatus.innerHTML = `<i class="fas fa-atom fa-spin"></i> Analyzing ${file.name}...`;
+            uploadBox.style.borderColor = "var(--neon-blue)";
+
+            // Disable manual entry initially
+            resumeText.disabled = true;
+            resumeText.style.opacity = "0.5";
+            resumeText.placeholder = "File content is being used. Use 'Manual Edit' to customize.";
+            manualLabel.innerHTML = "Details extracted from File (Manual Entry Disabled)";
+            fileActions.style.display = "flex";
+            document.getElementById('manual-edit-btn').style.display = "inline-block";
+            document.getElementById('manual-edit-btn').innerHTML = '<i class="fas fa-edit"></i> Manual Edit';
+
             const fileType = file.name.split('.').pop().toLowerCase();
-            if (fileType === 'pdf') extractTextFromPDF(file);
-            else if (fileType === 'docx') extractTextFromWord(file);
-            else {
-                const reader = new FileReader();
-                reader.onload = (e) => document.getElementById('resume-text').value = e.target.result;
-                reader.readAsText(file);
+
+            setTimeout(async () => {
+                if (fileType === 'pdf') await extractTextFromPDF(file);
+                else if (fileType === 'docx') await extractTextFromWord(file);
+                else {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        resumeText.value = e.target.result;
+                        finishAnalysis(file.name);
+                    };
+                    reader.readAsText(file);
+                    return;
+                }
+                finishAnalysis(file.name);
+            }, 1000);
+        }
+
+        function finishAnalysis(fileName) {
+            document.getElementById('file-status').innerHTML = `<i class="fas fa-check-circle" style="color: var(--neon-green)"></i> ${fileName} Analyzed`;
+        }
+
+        function resetFileInput(event) {
+            if (event) event.stopPropagation();
+            const input = document.getElementById('file-input');
+            const resumeText = document.getElementById('resume-text');
+            const manualLabel = document.getElementById('manual-label');
+            const fileStatus = document.getElementById('file-status');
+            const fileActions = document.getElementById('file-actions');
+            const uploadBox = document.getElementById('upload-box');
+
+            input.value = "";
+            resumeText.value = "";
+            resumeText.disabled = false;
+            resumeText.style.opacity = "1";
+            resumeText.placeholder = "Enter your career details, skills, and experience here...";
+            manualLabel.innerText = "Details Enter (Manual)";
+            fileStatus.innerText = "Click to upload PDF/DOCX";
+            fileActions.style.display = "none";
+            uploadBox.style.borderColor = "rgba(255, 255, 255, 0.2)";
+        }
+
+        function toggleManualEdit() {
+            const resumeText = document.getElementById('resume-text');
+            const btn = document.getElementById('manual-edit-btn');
+            const manualLabel = document.getElementById('manual-label');
+
+            if (resumeText.disabled) {
+                // Unlock
+                resumeText.disabled = false;
+                resumeText.style.opacity = "1";
+                resumeText.focus();
+                btn.innerHTML = '<i class="fas fa-lock"></i> Lock Content';
+                manualLabel.innerHTML = "Details extracted from File (Editing Active)";
+            } else {
+                // Lock
+                resumeText.disabled = true;
+                resumeText.style.opacity = "0.7";
+                btn.innerHTML = '<i class="fas fa-edit"></i> Manual Edit';
+                manualLabel.innerHTML = "Details extracted from File (Locked)";
             }
         }
 
@@ -736,9 +960,19 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
-                    fullText += textContent.items.map(s => s.str).join(' ') + "\n";
+
+                    let lastY, pageText = "";
+                    for (let item of textContent.items) {
+                        // Detect line breaks by comparing Y coordinate (transform[5])
+                        if (lastY !== undefined && Math.abs(item.transform[5] - lastY) > 2) {
+                            pageText += "\n";
+                        }
+                        pageText += item.str;
+                        lastY = item.transform[5];
+                    }
+                    fullText += pageText + "\n\n";
                 }
-                document.getElementById('resume-text').value = fullText;
+                document.getElementById('resume-text').value = fullText.trim();
             };
             reader.readAsArrayBuffer(file);
         }
@@ -769,37 +1003,133 @@
             output.style.display = "none";
             downloadBtn.style.display = "none";
 
-            try {
-                const response = await fetch('/generate-resume', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await response.json();
+            let attempts = 0;
+            const maxClientAttempts = 3;
 
-                // Check if response is raw text or JSON inside
-                let content = data.resume_content;
+            async function performArchitecting() {
                 try {
-                    const parsed = JSON.parse(content);
-                    if (parsed.display_content) content = parsed.display_content;
-                    else if (parsed.response) content = parsed.response;
-                } catch (e) { }
+                    const response = await fetch('/generate-resume', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                output.innerHTML = converter.makeHtml(content);
-                loader.style.display = "none";
-                output.style.display = "block";
-                downloadBtn.style.display = "block";
-                output.scrollIntoView({ behavior: 'smooth' });
-            } catch (error) {
-                loader.style.display = "none";
-                alert("Error generating resume. Please try again.");
-                console.error(error);
+                    if (response.status === 503 && attempts < maxClientAttempts) {
+                        attempts++;
+                        setTimeout(performArchitecting, attempts * 4000);
+                        return;
+                    }
+
+                    const data = await response.json();
+                    let content = data.resume_content;
+
+                    // Check for rate limit inside success response
+                    if (content.includes("Rate Limit") && attempts < maxClientAttempts) {
+                        attempts++;
+                        setTimeout(performArchitecting, attempts * 4000);
+                        return;
+                    }
+
+                    try {
+                        const parsed = JSON.parse(content);
+                        if (parsed.display_content) content = parsed.display_content;
+                        else if (parsed.response) content = parsed.response;
+                    } catch (e) { }
+
+                    output.innerHTML = converter.makeHtml(content);
+                    loader.style.display = "none";
+                    output.style.display = "block";
+                    document.getElementById('edit-preview-btn').style.display = "inline-block";
+                    downloadBtn.style.display = "inline-block";
+                    output.scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    if (attempts < maxClientAttempts) {
+                        attempts++;
+                        setTimeout(performArchitecting, attempts * 4000);
+                    } else {
+                        loader.style.display = "none";
+                        alert("AI Core is busy. Please try again in 1 minute.");
+                    }
+                }
+            }
+
+            performArchitecting();
+        }
+
+        function toggleLiveEdit() {
+            const output = document.getElementById('resume-output');
+            const btn = document.getElementById('edit-preview-btn');
+            const isEditing = output.contentEditable === "true";
+
+            if (!isEditing) {
+                output.contentEditable = "true";
+                output.focus();
+                btn.innerHTML = '<i class="fas fa-save"></i> Save & Lock Changes';
+                btn.style.background = "var(--accent-success)";
+                output.style.outline = "2px dashed var(--neon-blue)";
+                output.style.background = "rgba(255,255,255,0.95)";
+                output.style.color = "#000";
+            } else {
+                output.contentEditable = "false";
+                btn.innerHTML = '<i class="fas fa-edit"></i> Edit Resume Directly';
+                btn.style.background = "var(--neon-blue)";
+                output.style.outline = "none";
+                output.style.background = "white"; // Final state
             }
         }
 
-        function generatePDF() {
+        async function generatePDF() {
             const element = document.getElementById('resume-output');
-            html2pdf().set({ margin: 0.5, filename: 'JYOMARG_Resume.pdf', html2canvas: { scale: 2 } }).from(element).save();
+
+            if (element.contentEditable === "true") {
+                toggleLiveEdit();
+            }
+
+            const downloadBtn = document.getElementById('download-btn');
+            const originalBtnText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<i class="fas fa-atom fa-spin"></i> Directing to 1 Page...';
+            downloadBtn.disabled = true;
+
+            const originalPadding = element.style.padding;
+            const originalBoxShadow = element.style.boxShadow;
+            element.style.padding = "0px";
+            element.style.boxShadow = "none";
+
+            const opt = {
+                margin: [0.35, 0.45, 0.35, 0.45],
+                filename: 'JYOMARG_Resume.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 3,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0
+                },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                // Generate PDF worker
+                const worker = html2pdf().set(opt).from(element).toPdf().get('pdf');
+
+                await worker.then(function (pdf) {
+                    const pageCount = pdf.internal.getNumberOfPages();
+                    if (pageCount > 1) {
+                        // Forcefully delete extra pages if any white space spillover happened
+                        for (let i = pageCount; i > 1; i--) {
+                            pdf.deletePage(i);
+                        }
+                    }
+                }).save();
+            } catch (err) {
+                console.error("PDF Generation Error:", err);
+                alert("Error generating PDF. Please try again.");
+            } finally {
+                element.style.padding = originalPadding;
+                element.style.boxShadow = originalBoxShadow;
+                downloadBtn.innerHTML = originalBtnText;
+                downloadBtn.disabled = false;
+            }
         }
     </script>
 

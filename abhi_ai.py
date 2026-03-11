@@ -7,22 +7,41 @@ import re
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
+import hashlib
+from database import get_cached_ai_response, save_ai_response_to_cache
+
 class ABHIAssistant:
     def __init__(self):
         if not api_key:
             print("[CRITICAL] GOOGLE_API_KEY is missing!")
         
-        self.model_name = "gemini-1.5-flash"
-        self.model = genai.GenerativeModel(model_name=self.model_name)
+        # Using 1.5-flash as it's often more stable for free-tier quotas than 2.0-flash previews
+        self.model_name = "gemini-3-flash-preview" 
+        self.fallback_model_name = "gemini-flash-latest"
         
-        print(f"[SYSTEM] AI Initialized with {self.model_name}")
+        try:
+            self.model = genai.GenerativeModel(model_name=self.model_name)
+            print(f"[SYSTEM] AI Initialized with {self.model_name}")
+        except:
+            self.model = genai.GenerativeModel(model_name=self.fallback_model_name)
+            print(f"[SYSTEM] AI Falling back to {self.fallback_model_name}")
 
     def _get_json_response(self, prompt):
         import time
-        max_attempts = 3
+        import random
+        
+        # 1. Check Cache First
+        prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()
+        cached = get_cached_ai_response(prompt_hash)
+        if cached:
+            print(f"[CACHE] Hit for prompt hash: {prompt_hash[:10]}")
+            return cached
+
+        max_attempts = 5
+        full_prompt = f"SYSTEM: You are ABHI AI. You MUST output ONLY valid JSON. No conversational text.\nUSER: {prompt}"
+        
         for attempt in range(max_attempts):
             try:
-                full_prompt = f"SYSTEM: You are ABHI AI. You MUST output ONLY valid JSON. No conversational text.\nUSER: {prompt}"
                 response = self.model.generate_content(full_prompt)
                 
                 if not response or not hasattr(response, 'text'):
@@ -47,15 +66,19 @@ class ABHIAssistant:
                         if start != -1 and end != -1:
                             clean_json = clean_json[start:end+1]
                 
-                json.loads(clean_json.strip())
-                return clean_json.strip()
+                clean_json = clean_json.strip()
+                json.loads(clean_json) # Validate JSON
+                
+                # 2. Save Successfully Parsed Response to Cache
+                save_ai_response_to_cache(prompt_hash, clean_json)
+                return clean_json
                 
             except Exception as e:
                 error_str = str(e)
-                if "429" in error_str:
+                if "429" in error_str or "quota" in error_str.lower():
                     if attempt < max_attempts - 1:
-                        wait_time = (attempt + 1) * 5 
-                        print(f"[SYSTEM] Rate limit hit. Retrying in {wait_time}s...")
+                        wait_time = (2 ** attempt) * 5 + random.uniform(0, 1)
+                        print(f"[SYSTEM] Rate limit hit (Attempt {attempt+1}/{max_attempts}). Retrying in {wait_time:.1f}s...")
                         time.sleep(wait_time)
                         continue
                     else:
@@ -77,8 +100,17 @@ class ABHIAssistant:
         )
         return self._get_json_response(prompt)
 
-    def generate_job_alerts(self, user_profile):
-        prompt = f"Based on this profile: {user_profile}, generate 3 realistic job alerts. Output ONLY as JSON: {{'jobs': [{{'job_title': '', 'company': '', 'match_score': 0-100, 'reason': '', 'apply_link': ''}}]}}"
+    def generate_job_alerts(self, user_profile, existing_jobs=None):
+        existing_str = ""
+        if existing_jobs:
+            existing_str = f" DO NOT recommend any of these previously recommended jobs or companies: {', '.join(existing_jobs)}. "
+            
+        prompt = (
+            f"Based on this profile: {user_profile}, generate 3 realistic job alerts relevant to their skills. "
+            f"STRICT REQUIREMENT: Only include jobs that were posted within the LAST 3 TO 4 DAYS.{existing_str} "
+            f"Output ONLY as JSON: {{'jobs': [{{'job_title': '', 'company': '', 'match_score': 0-100, 'reason': '', 'apply_link': ''}}]}}"
+        )
+        # Avoid caching if we have existing jobs, or hash existing jobs as well, by ensuring existing_jobs affects the prompt, which it does.
         return self._get_json_response(prompt)
 
     def generate_course_syllabus(self, topic):
@@ -87,14 +119,35 @@ class ABHIAssistant:
 
     def generate_day_content(self, topic, day_title):
         import time
+        import random
+        
         prompt = f"Write a detailed professional markdown guide for {topic}: {day_title}. Focus on practical examples."
-        for attempt in range(2):
+        prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()
+        
+        # 1. Check Cache
+        cached = get_cached_ai_response(prompt_hash)
+        if cached:
+            print(f"[CACHE] Content Hit for: {topic} - {day_title}")
+            return cached
+
+        max_attempts = 5
+        for attempt in range(max_attempts):
             try:
                 response = self.model.generate_content(prompt)
-                return response.text.strip()
+                if not response or not hasattr(response, 'text'):
+                    raise Exception("Empty response from AI")
+                
+                content = response.text.strip()
+                # 2. Save to Cache
+                save_ai_response_to_cache(prompt_hash, content)
+                return content
+                
             except Exception as e:
-                if "429" in str(e) and attempt == 0:
-                    time.sleep(5)
+                error_str = str(e)
+                if ("429" in error_str or "quota" in error_str.lower()) and attempt < max_attempts - 1:
+                    wait_time = (2 ** attempt) * 5 + random.uniform(0, 1)
+                    print(f"[SYSTEM] Content generation Rate limit hit (Attempt {attempt+1}/{max_attempts}). Retrying in {wait_time:.1f}s...")
+                    time.sleep(wait_time)
                     continue
                 return f"AI is temporarily overloaded. Please try again in a minute. (Error: {str(e)})"
 
@@ -113,5 +166,22 @@ class ABHIAssistant:
             f"5. PRACTICE: One short action. "
             f"JSON: {{'title': '{domain}', 'phases': [{{'phase_num': 1, 'phase_name': '', 'weeks': [{{'week_number': 1, 'week_title': '', 'days': [{{'day_number': 1, 'topics': [{{'topic_name': '', 'explanation': '', 'practice': ''}}]}}]}}]}}]}} "
             f"RULE: Global day numbering. Output ONLY JSON."
+        )
+        return self._get_json_response(prompt)
+    def check_ats_score(self, resume_text, jd_text):
+        prompt = (
+            f"Act as an expert ATS (Applicant Tracking System) optimizer. "
+            f"Analyze the following Resume against the Job Description. "
+            f"Resume: {resume_text}\n"
+            f"Job Description: {jd_text}\n"
+            f"Output ONLY a JSON object with keys: "
+            f"'score' (0-100), "
+            f"'keyword_matches' (list of matched keywords), "
+            f"'missing_keywords' (list of keywords to add), "
+            f"'formatting_score' (0-100), "
+            f"'content_suggestions' (list of specific improvements), "
+            f"'alignment_suggestions' (list of specific layout/alignment suggestions for a professional look), "
+            f"'jd_matches_highlighted' (list of phrases/sections from the resume that already perfectly match the JD or role requirements), "
+            f"'ai_improved_resume' (a professionally rewritten version of the resume optimized for this JD, maintaining a clear professional structure with headings and bullet points)."
         )
         return self._get_json_response(prompt)
