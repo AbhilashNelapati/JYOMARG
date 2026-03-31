@@ -92,13 +92,9 @@ class ABHIAssistant:
         return self._get_json_response(prompt)
 
     def ask_abhi(self, user_input):
-        prompt = (
-            f"You are ABHI AI, a helpful career assistant. "
-            f"User asked: '{user_input}'. "
-            f"Provide a friendly, useful response. "
-            f"Output as JSON with keys: 'spoken_summary' (short summary) and 'display_content' (detailed markdown)."
-        )
-        return self._get_json_response(prompt)
+        # [MIGRATED] Now uses the decentralized ProviderRouter for Gemini/Ollama Fallback support
+        from services.chat_service import handle_ask_abhi
+        return handle_ask_abhi(user_input)
 
     def generate_job_alerts(self, user_profile, existing_jobs=None):
         existing_str = ""
@@ -114,74 +110,26 @@ class ABHIAssistant:
         return self._get_json_response(prompt)
 
     def generate_course_syllabus(self, topic):
-        prompt = f"Generate a week-wise syllabus for {topic}. Output ONLY as JSON: {{'course_title': '', 'description': '', 'weeks': [{{'week_number': 1, 'title': '', 'days': [{{'day_number': 1, 'title': ''}}]}}]}}"
-        return self._get_json_response(prompt)
+        # [MIGRATED in Phase 9] Deterministic week mapping
+        from services.course_service import generate_hybrid_syllabus
+        return generate_hybrid_syllabus(topic)
 
     def generate_day_content(self, topic, day_title):
-        import time
-        import random
-        
-        prompt = f"Write a detailed professional markdown guide for {topic}: {day_title}. Focus on practical examples."
-        prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()
-        
-        # 1. Check Cache
-        cached = get_cached_ai_response(prompt_hash)
-        if cached:
-            print(f"[CACHE] Content Hit for: {topic} - {day_title}")
-            return cached
-
-        max_attempts = 5
-        for attempt in range(max_attempts):
-            try:
-                response = self.model.generate_content(prompt)
-                if not response or not hasattr(response, 'text'):
-                    raise Exception("Empty response from AI")
-                
-                content = response.text.strip()
-                # 2. Save to Cache
-                save_ai_response_to_cache(prompt_hash, content)
-                return content
-                
-            except Exception as e:
-                error_str = str(e)
-                if ("429" in error_str or "quota" in error_str.lower()) and attempt < max_attempts - 1:
-                    wait_time = (2 ** attempt) * 5 + random.uniform(0, 1)
-                    print(f"[SYSTEM] Content generation Rate limit hit (Attempt {attempt+1}/{max_attempts}). Retrying in {wait_time:.1f}s...")
-                    time.sleep(wait_time)
-                    continue
-                return f"AI is temporarily overloaded. Please try again in a minute. (Error: {str(e)})"
+        # [MIGRATED in Phase 9] Schema constrained JSON output rendered to Markdown
+        from services.lesson_service import generate_hybrid_lesson
+        return generate_hybrid_lesson(topic, day_title)
 
     def generate_assessment(self, topic, week_number, is_final=False):
         prompt = f"Generate 5 MCQs for {topic} Week {week_number}. Output ONLY as JSON: {{'questions': [{{'id': 1, 'question': '', 'options': ['', '', '', ''], 'answer': ''}}]}}"
         return self._get_json_response(prompt)
 
     def generate_career_roadmap(self, domain):
-        prompt = (
-            f"Generate a minimalist professional roadmap for {domain}. "
-            f"STRICT RULES: "
-            f"1. PHASE Title: Max 3 words. "
-            f"2. WEEK Title: Max 4 words. "
-            f"3. DAY: Max 1 topic per day. "
-            f"4. EXPLANATION: Exactly one short sentence. "
-            f"5. PRACTICE: One short action. "
-            f"JSON: {{'title': '{domain}', 'phases': [{{'phase_num': 1, 'phase_name': '', 'weeks': [{{'week_number': 1, 'week_title': '', 'days': [{{'day_number': 1, 'topics': [{{'topic_name': '', 'explanation': '', 'practice': ''}}]}}]}}]}}]}} "
-            f"RULE: Global day numbering. Output ONLY JSON."
-        )
-        return self._get_json_response(prompt)
+        # [MIGRATED in Phase 8] Now utilizes Hybrid Python logic for structural
+        # integrity (phase/week counts) and LLM solely for learning content synthesis.
+        from services.roadmap_service import generate_hybrid_roadmap
+        return generate_hybrid_roadmap(domain)
     def check_ats_score(self, resume_text, jd_text):
-        prompt = (
-            f"Act as an expert ATS (Applicant Tracking System) optimizer. "
-            f"Analyze the following Resume against the Job Description. "
-            f"Resume: {resume_text}\n"
-            f"Job Description: {jd_text}\n"
-            f"Output ONLY a JSON object with keys: "
-            f"'score' (0-100), "
-            f"'keyword_matches' (list of matched keywords), "
-            f"'missing_keywords' (list of keywords to add), "
-            f"'formatting_score' (0-100), "
-            f"'content_suggestions' (list of specific improvements), "
-            f"'alignment_suggestions' (list of specific layout/alignment suggestions for a professional look), "
-            f"'jd_matches_highlighted' (list of phrases/sections from the resume that already perfectly match the JD or role requirements), "
-            f"'ai_improved_resume' (a professionally rewritten version of the resume optimized for this JD, maintaining a clear professional structure with headings and bullet points)."
-        )
-        return self._get_json_response(prompt)
+        # [MIGRATED] Now uses deterministic Python logic for scoring
+        # and delegating to the unified Provider Router for explanations via LLM
+        from services.ats_service import analyze_hybrid_ats
+        return analyze_hybrid_ats(resume_text, jd_text)
