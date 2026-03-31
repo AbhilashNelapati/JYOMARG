@@ -29,7 +29,7 @@ abhi = ABHIAssistant()
 
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def landing_page(request: Request):
-    return templates.TemplateResponse("landing.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="landing.html")
 
 @app.get("/health")
 async def health_check():
@@ -37,30 +37,30 @@ async def health_check():
 
 @app.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="signup.html")
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     user = request.session.get("user")
     if not user: 
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("index.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="index.html", context={"user": user})
 
 @app.get("/tutor")
 async def tutor_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("TutorAI.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="TutorAI.html", context={"user": user})
 
 @app.get("/abhi")
 async def abhi_chat_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("AbhiChat.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="AbhiChat.html", context={"user": user})
 
 @app.get("/profile", response_class=HTMLResponse)
 async def profile_page(request: Request):
@@ -111,7 +111,7 @@ async def profile_page(request: Request):
         except Exception as e:
             print(f"Migration Error: {e}")
 
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user_data, "notifications": notifications, "resumes": resumes})
+    return templates.TemplateResponse(request=request, name="profile.html", context={"user": user_data, "notifications": notifications, "resumes": resumes})
 
 @app.post("/api/notifications/search")
 async def trigger_search_custom(request: Request):
@@ -166,25 +166,25 @@ async def trigger_search_custom(request: Request):
 async def resume_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("ResumeBuilder.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="ResumeBuilder.html", context={"user": user})
 
 @app.get("/analyzer")
 async def analyzer_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("SkillAnalyzer.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="SkillAnalyzer.html", context={"user": user})
 
 @app.get("/ats-checker")
 async def ats_checker_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("ATSChecker.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="ATSChecker.html", context={"user": user})
 
 @app.get("/career-architect")
 async def career_architect_page(request: Request):
     user = request.session.get("user")
     if not user: return RedirectResponse(url="/login")
-    return templates.TemplateResponse("CareerArchitect.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="CareerArchitect.html", context={"user": user})
 
 @app.post("/api/career/roadmap/generate")
 async def generate_roadmap_api(request: Request):
@@ -563,7 +563,7 @@ async def generate_resume_endpoint(data: dict = Body(...)):
 @app.get("/learn", response_class=HTMLResponse)
 async def learn_page(request: Request):
     if not request.session.get("user"): return RedirectResponse(url="/login")
-    return templates.TemplateResponse("learn.html", {"request": request, "user": request.session["user"]})
+    return templates.TemplateResponse(request=request, name="learn.html", context={"user": request.session["user"]})
 
 @app.get("/api/learn/courses")
 async def get_courses_api(request: Request):
