@@ -8,6 +8,9 @@
 
 **JYOMARG** (Sanskrit for "The Path of Mastery") is a production-grade, AI-powered career ecosystem designed to bridge the gap between academic learning and industry readiness. It utilizes a **Hybrid AI Architecture** that combines deterministic Python logic with Large Language Model (LLM) reasoning to provide a structured, reliable, and intelligent learning experience.
 
+### 🌐 Live Application: [https://jyomarg-1.onrender.com](https://jyomarg-1.onrender.com)
+
+
 ---
 
 ## 🏗️ Technical Architecture: The Hybrid Edge
