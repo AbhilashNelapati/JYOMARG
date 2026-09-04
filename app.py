@@ -1,0 +1,671 @@
+import random
+import uvicorn
+import json
+import re
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import PyPDF2
+import shutil
+from fastapi import FastAPI, Request, Form, Body, File, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, PlainTextResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
+from abhi_ai import ABHIAssistant
+from database import init_db, add_user, get_user, get_user_profile, update_user_profile, add_notification, get_notifications, get_today_notifications, cleanup_old_notifications, mark_notifications_read, migrate_notifications_schema, migrate_users_schema, add_resume, get_user_resumes, delete_resume, set_active_resume, get_active_resume_text, create_course, get_user_courses, get_course_details, save_day_content, get_day_content, update_course_progress, save_roadmap, get_user_roadmap, delete_roadmap
+
+init_db()
+
+app = FastAPI()
+
+app.add_middleware(SessionMiddleware, secret_key="JYOMARG_ULTRA_SECRET")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates") 
+
+abhi = ABHIAssistant()
+
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
+async def landing_page(request: Request):
+    return templates.TemplateResponse(request=request, name="landing.html")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+@app.get("/signup", response_class=HTMLResponse)
+async def signup_page(request: Request):
+    return templates.TemplateResponse(request=request, name="signup.html")
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse(request=request, name="login.html")
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    user = request.session.get("user")
+    if not user: 
+        return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="index.html", context={"user": user})
+
+@app.get("/tutor")
+async def tutor_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="TutorAI.html", context={"user": user})
+
+@app.get("/abhi")
+async def abhi_chat_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="AbhiChat.html", context={"user": user})
+
+@app.get("/profile", response_class=HTMLResponse)
+async def profile_page(request: Request):
+    if not request.session.get("user"): return RedirectResponse(url="/login")
+    
+    user_email = request.session["user"]["email"]
+    user_data = get_user_profile(user_email)
+    
+    notifications = get_notifications(user_email)
+    
+    if not notifications and user_data:
+        user_profile_dict = dict(user_data) 
+        alerts_raw = abhi.generate_job_alerts(user_profile_dict)
+        try:
+            alerts_data = json.loads(alerts_raw)
+            if "error" not in alerts_data:
+                jobs = alerts_data.get("jobs", [])
+                for alert in jobs:
+                    add_notification(
+                        user_email, 
+                        alert.get("job_title", "Unknown Role"), 
+                        alert.get("company", "Unknown Company"), 
+                        alert.get("match_score", 0), 
+                        alert.get("reason", "Profile Match"),
+                        alert.get("apply_link", "#")
+                    )
+                notifications = get_notifications(user_email)
+        except Exception as e:
+            print(f"[ERROR] Profile alert generation failed: {e}")
+            
+    resumes = get_user_resumes(user_email)
+    
+    if not resumes and user_data and user_data['resume_path']:
+        try:
+             legacy_path = user_data['resume_path']
+             filename = os.path.basename(legacy_path)
+             if not filename: filename = "Legacy_Resume.pdf"
+             
+             try:
+                legacy_text = user_data['resume_text'] if 'resume_text' in user_data.keys() else ""
+             except:
+                legacy_text = ""
+             
+             add_resume(user_email, filename, legacy_path, legacy_text, is_active=True)
+             
+             resumes = get_user_resumes(user_email)
+             print(f"Migrated legacy resume for {user_email}")
+        except Exception as e:
+            print(f"Migration Error: {e}")
+
+    return templates.TemplateResponse(request=request, name="profile.html", context={"user": user_data, "notifications": notifications, "resumes": resumes})
+
+@app.post("/api/notifications/search")
+async def trigger_search_custom(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    email = user_session["email"]
+    user_data = get_user_profile(email)
+    
+    if not user_data:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+        
+    try:
+        active_text = get_active_resume_text(email)
+        user_profile_dict = dict(user_data)
+        if active_text:
+             user_profile_dict['resume_text'] = active_text
+             
+        existing_notifs = get_notifications(email)
+        existing_jobs = [f"{n['job_title']} at {n['company']}" for n in existing_notifs] if existing_notifs else []
+             
+        alerts_raw = abhi.generate_job_alerts(user_profile_dict, existing_jobs)
+        alerts_data = json.loads(alerts_raw)
+        
+        if "error" in alerts_data:
+            print(f"[ERROR] Manual Search failed: {alerts_data['error']}")
+            return JSONResponse({"error": alerts_data["error"]}, status_code=503)
+            
+        jobs = alerts_data.get("jobs", [])
+        if not isinstance(jobs, list):
+            return JSONResponse({"error": "Invalid AI response structure"}, status_code=500)
+            
+        count = 0
+        for job in jobs:
+            if isinstance(job, dict):
+                add_notification(
+                    email, 
+                    job.get("job_title", "Unknown Role"), 
+                    job.get("company", "Unknown Company"), 
+                    job.get("match_score", 0), 
+                    job.get("reason", ""), 
+                    job.get("apply_link", "#")
+                )
+                count += 1
+            
+        return JSONResponse({"message": f"Search complete. Found {count} new jobs."})
+    except Exception as e:
+        print(f"Manual Search Error: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/resume")
+async def resume_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="ResumeBuilder.html", context={"user": user})
+
+@app.get("/analyzer")
+async def analyzer_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="SkillAnalyzer.html", context={"user": user})
+
+@app.get("/ats-checker")
+async def ats_checker_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="ATSChecker.html", context={"user": user})
+
+@app.get("/career-architect")
+async def career_architect_page(request: Request):
+    user = request.session.get("user")
+    if not user: return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="CareerArchitect.html", context={"user": user})
+
+@app.post("/api/career/roadmap/generate")
+async def generate_roadmap_api(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    data = await request.json()
+    domain = data.get("domain")
+    preview = data.get("preview", False) 
+    
+    roadmap_json = abhi.generate_career_roadmap(domain)
+    
+    if preview:
+        try:
+            parsed = json.loads(roadmap_json)
+            if "error" in parsed:
+                return JSONResponse(parsed, status_code=503)
+            return JSONResponse(parsed)
+        except json.JSONDecodeError:
+            return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, status_code=500)
+    
+    try:
+        parsed = json.loads(roadmap_json)
+        if "error" in parsed:
+            return JSONResponse(parsed, status_code=503)
+
+        if save_roadmap(user["email"], domain, roadmap_json):
+            return JSONResponse(parsed)
+        else:
+            return JSONResponse({"error": "Failed to save roadmap"}, status_code=500)
+    except json.JSONDecodeError:
+         return JSONResponse({"error": f"Invalid AI Response: {roadmap_json[:500]}"}, status_code=500)
+
+@app.post("/api/career/roadmap/save")
+async def save_roadmap_endpoint(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    data = await request.json()
+    domain = data.get("domain")
+    roadmap_data = data.get("roadmap") 
+    
+    if not domain or not roadmap_data:
+        return JSONResponse({"error": "Missing domain or roadmap data"}, 400)
+    
+    roadmap_json_str = json.dumps(roadmap_data)
+    
+    if save_roadmap(user["email"], domain, roadmap_json_str):
+        return JSONResponse({"success": True})
+    else:
+        return JSONResponse({"error": "Failed to save roadmap"}, 500)
+
+@app.post("/api/career/roadmap/delete") 
+async def delete_roadmap_endpoint(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    if delete_roadmap(user["email"]):
+        return JSONResponse({"success": True})
+    else:
+        return JSONResponse({"error": "Failed to delete roadmap"}, 500)
+
+@app.get("/api/career/roadmap")
+async def get_roadmap_api(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    roadmap = get_user_roadmap(user["email"])
+    if roadmap:
+        return JSONResponse({
+            "domain": roadmap["domain"],
+            "roadmap": json.loads(roadmap["roadmap_json"]),
+            "created_at": roadmap["created_at"]
+        })
+    else:
+        return JSONResponse(None)
+
+@app.post("/auth/signup")
+async def handle_signup(request: Request, full_name: str = Form(...), email: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
+    if len(password) < 8:
+        return "Error: Password must be at least 8 characters."
+    if not re.search(r"[A-Z]", password) or not re.search(r"[0-9]", password) or not re.search(r"[!@#$%^&*]", password):
+        return "Error: Password must have 1 Capital, 1 Number, and 1 Symbol."
+    
+    if password != confirm_password:
+        return "Error: Passwords do not match."
+
+    if add_user(full_name, email, password):
+         return RedirectResponse(url="/login", status_code=303)
+    else:
+         return HTMLResponse(content="Error: Email already registered. <a href='/signup'>Try again</a>", status_code=400)
+
+@app.post("/auth/login")
+async def handle_login(request: Request, email: str = Form(...), password: str = Form(...)):
+    print(f"[AUTH] Login attempt for: {email}")
+    user = get_user(email, password)
+
+    if user:
+        print(f"[AUTH] Login successful for: {email}")
+        request.session["user"] = {"name": user[0], "email": user[1]}
+        return RedirectResponse(url="/dashboard", status_code=303)
+    else:
+        print(f"[AUTH] Login failed: Invalid credentials for {email}")
+        return HTMLResponse(content="Invalid Credentials. <a href='/login'>Try Again</a>", status_code=401)
+
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/")
+
+async def trigger_job_search(email):
+    try:
+        user_data = get_user_profile(email)
+        if user_data:
+            active_text = get_active_resume_text(email)
+            
+            user_profile_dict = dict(user_data)
+            user_profile_dict['resume_text'] = active_text 
+            
+            existing_notifs = get_notifications(email)
+            existing_jobs = [f"{n['job_title']} at {n['company']}" for n in existing_notifs] if existing_notifs else []
+            
+            alerts_raw = abhi.generate_job_alerts(user_profile_dict, existing_jobs)
+            alerts_data = json.loads(alerts_raw)
+            
+            if "error" in alerts_data:
+                print(f"[ERROR] Job search failed: {alerts_data['error']}")
+                return False
+
+            jobs = alerts_data.get("jobs", [])
+            for job in jobs:
+                add_notification(
+                    email, 
+                    job.get("job_title"), 
+                    job.get("company"), 
+                    job.get("match_score"), 
+                    job.get("reason"), 
+                    job.get("apply_link")
+                )
+            print(f"DEBUG: Job Search Triggered for {email}")
+            return True
+    except Exception as e:
+        print(f"Activation Search Error: {e}")
+        return False
+
+@app.post("/api/resumes/upload")
+async def upload_resume_api(request: Request, resume: UploadFile = File(...)):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    email = user_session["email"]
+    try:
+        if not resume.filename.endswith(".pdf"):
+            return JSONResponse({"error": "Only PDF files are allowed"}, status_code=400)
+
+        upload_dir = "static/uploads/resumes"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        filename = f"{email}_{int(os.path.getmtime(upload_dir) if os.path.exists(upload_dir) else 0)}_{resume.filename}" 
+        file_path = f"{upload_dir}/{filename}"
+        
+        print(f"DEBUG: Saving resume to {file_path}")
+        with open(file_path, "wb+") as file_object:
+            shutil.copyfileobj(resume.file, file_object)
+        print("DEBUG: File saved successfully")
+            
+        resume_text = ""
+        try:
+            print(f"DEBUG: Parsing PDF from {file_path}")
+            reader = PyPDF2.PdfReader(file_path)
+            for page in reader.pages:
+                resume_text += page.extract_text()
+            print(f"DEBUG: PDF parsed, length: {len(resume_text)}")
+        except Exception as e:
+             print(f"DEBUG: PDF Parse Error: {e}")
+             
+        existing_resumes = get_user_resumes(email)
+        is_active = len(existing_resumes) == 0
+        print(f"DEBUG: Adding to DB, is_active={is_active}")
+        
+        if add_resume(email, resume.filename, "/" + file_path, resume_text, is_active):
+            print("DEBUG: Resume added to DB")
+            if is_active:
+                 await trigger_job_search(email)
+
+            return JSONResponse({"message": "Resume uploaded successfully", "filename": resume.filename})
+        else:
+            print("DEBUG: DB Error during add_resume")
+            return JSONResponse({"error": "Database error"}, status_code=500)
+
+    except Exception as e:
+        print(f"Resume Upload Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/api/resumes/delete")
+async def delete_resume_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    resume_id = data.get("id")
+    
+    if delete_resume(resume_id, user_session["email"]):
+        return JSONResponse({"message": "Deleted"})
+    return JSONResponse({"error": "Failed"}, status_code=500)
+
+@app.post("/api/resumes/activate")
+async def activate_resume_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    resume_id = data.get("id")
+    
+    if set_active_resume(resume_id, user_session["email"]):
+        await trigger_job_search(user_session["email"])
+        return JSONResponse({"message": "Activated and Search Started"})
+    return JSONResponse({"error": "Failed"}, status_code=500)
+    
+@app.post("/profile/update")
+async def update_profile(
+    request: Request,
+    phone: str = Form(""),
+    location: str = Form(""),
+    bio: str = Form(""),
+    linkedin: str = Form(""),
+    github: str = Form(""),
+    skills: str = Form(""),
+    experience_years: str = Form(""),
+    degree: str = Form(""),
+    university: str = Form(""),
+    grad_year: str = Form("")
+):
+    user_session = request.session.get("user")
+    if not user_session: return RedirectResponse(url="/login")
+
+    email = user_session["email"]
+    
+    if update_user_profile(email, phone, location, bio, linkedin, github, skills, experience_years, degree, university, grad_year):
+        return RedirectResponse(url="/profile?saved=true", status_code=303)
+    else:
+        return "Error updating profile."
+
+@app.get("/api/notifications")
+async def get_notifications_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"notifications": []})
+    
+    # Auto-cleanup old jobs (>5 days)
+    cleanup_old_notifications()
+    
+    email = user_session["email"]
+    
+    # Check if we only want today's jobs (requested for dashboard)
+    is_today = request.query_params.get("today") == "true"
+    
+    if is_today:
+        notifications = get_today_notifications(email)
+    else:
+        notifications = get_notifications(email)
+    
+    notif_list = []
+    for n in notifications:
+        notif_list.append({
+            "id": n["id"],
+            "job_title": n["job_title"],
+            "company": n["company"],
+            "match_score": n["match_score"],
+            "reason": n["reason"],
+            "apply_link": n["apply_link"],
+            "created_at": str(n["created_at"]),
+            "is_read": n["is_read"]
+        })
+        
+    return JSONResponse({"notifications": notif_list})
+
+@app.post("/api/notifications/read-all")
+async def mark_read_all_api(request: Request):
+    user_session = request.session.get("user")
+    if user_session:
+        mark_notifications_read(user_session["email"])
+    return JSONResponse({"status": "ok"})
+
+@app.post("/api/notifications/read")
+async def mark_notif_read_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    notif_id = data.get("id")
+    
+    import sqlite3
+    from database import DB_NAME
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_email = ?", (notif_id, user_session["email"]))
+    conn.commit()
+    conn.close()
+    
+    return JSONResponse({"status": "ok"})
+
+@app.post("/api/notifications/delete")
+async def delete_notif_api(request: Request):
+    user_session = request.session.get("user")
+    if not user_session: return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    notif_id = data.get("id")
+    
+    from database import delete_notification
+    if delete_notification(notif_id, user_session["email"]):
+        return JSONResponse({"status": "ok"})
+    return JSONResponse({"error": "Failed to delete"}, status_code=500)
+
+@app.post("/analyze-gap")
+async def analyze_gap_endpoint(data: dict = Body(...)):
+    resume = data.get("resume_text", "")
+    jd = data.get("jd_text", "")
+    raw_ai_response = abhi.analyze_skill_gap(resume, jd)
+    try:
+        parsed_json = json.loads(raw_ai_response)
+        if "error" in parsed_json:
+            return JSONResponse(content={"match_score": 0, "skill_scores": {}, "missing_skills": [], "advice": f"AI Rate Limit: {parsed_json['error']}", "error_msg": parsed_json['error']})
+        return JSONResponse(content=parsed_json)
+    except Exception as e:
+        print(f"[ERROR] analyze_skill_gap failed to parse: {e}")
+        return JSONResponse(content={"match_score": 0, "skill_scores": {}, "missing_skills": [], "advice": "Error processing AI data."})
+
+@app.post("/api/ats/analyze")
+async def analyze_ats_endpoint(data: dict = Body(...)):
+    resume = data.get("resume_text", "")
+    jd = data.get("jd_text", "")
+    raw_ai_response = abhi.check_ats_score(resume, jd)
+    try:
+        parsed_json = json.loads(raw_ai_response)
+        return JSONResponse(content=parsed_json)
+    except Exception as e:
+        print(f"[ERROR] ATS analysis failed: {e}")
+        return JSONResponse(content={"error": "Failed to parse AI response"}, status_code=500)
+
+@app.post("/ask")
+async def ask_abhi_endpoint(query: str = Form(...)):
+    response_text = abhi.ask_abhi(query)
+    try:
+        parsed = json.loads(response_text)
+        if "error" in parsed:
+             return JSONResponse(content={"response": json.dumps({"display_content": f"**System Notice:** {parsed['error']}"})})
+    except:
+        pass
+    return JSONResponse(content={"response": response_text})
+
+@app.post("/generate-resume")
+async def generate_resume_endpoint(data: dict = Body(...)):
+    prompt = (
+        f"Architect a professional, premium resume for {data['name']} using the provided data: {data['existing_resume']}. "
+        f"Optimize it for this Job Description: {data['job_desc']}. "
+        f"STRICT CONTENT RULES: "
+        f"1. HEADER: You MUST start the content with '# {data['name']}' prominently at the top. "
+        f"2. SECTIONS: Provide SEPARATE headings for 'Education' and 'Certifications'. DO NOT combine them into one section. "
+        f"3. PAGE LIMIT: The entire resume MUST fit on strictly one A4 page. "
+        f"4. BREVITY: Use extremely concise bullet points (max 3 per role/project). "
+        f"5. CONTACT: Include placeholders or extracted Email, Phone, and LinkedIn below the name header. "
+        f"6. STRUCTURE: Use professional, high-density Markdown."
+    )
+    result = abhi.ask_abhi(prompt)
+    try:
+        parsed = json.loads(result)
+        if "error" in parsed:
+            return JSONResponse(content={"resume_content": json.dumps({"display_content": f"**System Notice:** {parsed['error']}"})})
+    except:
+        pass
+    return {"resume_content": result}
+
+@app.get("/learn", response_class=HTMLResponse)
+async def learn_page(request: Request):
+    if not request.session.get("user"): return RedirectResponse(url="/login")
+    return templates.TemplateResponse(request=request, name="learn.html", context={"user": request.session["user"]})
+
+@app.get("/api/learn/courses")
+async def get_courses_api(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    courses = get_user_courses(user["email"])
+    return JSONResponse([dict(c) for c in courses])
+
+@app.post("/api/learn/generate")
+async def generate_course_api(request: Request):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    data = await request.json()
+    topic = data.get("topic")
+    
+    syllabus_json = abhi.generate_course_syllabus(topic)
+    
+    try:
+        check_err = json.loads(syllabus_json)
+        if "error" in check_err:
+            return JSONResponse({"error": check_err["error"]}, 500)
+    except:
+        pass 
+    
+    course_id = create_course(user["email"], topic, syllabus_json)
+    
+    if course_id:
+        return JSONResponse({"message": "Course created", "id": course_id})
+    return JSONResponse({"error": "Failed to create course"}, 500)
+
+@app.get("/api/learn/course/{course_id}")
+async def get_course_details_api(request: Request, course_id: int):
+    user = request.session.get("user")
+    if not user: return JSONResponse({"error": "Unauthorized"}, 401)
+    
+    course = get_course_details(course_id)
+    if not course: return JSONResponse({"error": "Not found"}, 404)
+    
+    return JSONResponse(dict(course))
+
+@app.get("/api/learn/course/{course_id}/content")
+async def get_day_content_api(request: Request, course_id: int):
+    week = int(request.query_params.get("week"))
+    day = int(request.query_params.get("day"))
+    title = request.query_params.get("title")
+    
+    content = get_day_content(course_id, week, day)
+    
+    # If content exists but is an AI error message, or content doesn't exist
+    if not content or "AI is temporarily overloaded" in content or "Rate Limit" in content:
+        course = get_course_details(course_id)
+        new_content = abhi.generate_day_content(course["topic"], title)
+        
+        # Only save if it's NOT an error message
+        if "AI is temporarily overloaded" not in new_content and "Rate Limit" not in new_content:
+            save_day_content(course_id, week, day, new_content)
+            return JSONResponse({"content": new_content})
+        else:
+            # If it's still an error, return it but don't overwrite if we already had something else (unlikely here)
+            # but return a 503 so the frontend can retry if implemented
+            return JSONResponse({"content": new_content, "error": True}, status_code=503)
+        
+    return JSONResponse({"content": content})
+
+@app.post("/api/learn/course/{course_id}/progress")
+async def update_progress_api(request: Request, course_id: int):
+    data = await request.json()
+    week = data.get("week")
+    day = data.get("day")
+    completed_days = json.dumps(data.get("completed_days")) 
+    
+    update_course_progress(course_id, week, day, completed_days)
+    return JSONResponse({"message": "Progress updated"})
+
+@app.get("/api/learn/course/{course_id}/quiz")
+async def get_quiz_api(request: Request, course_id: int):
+    week = int(request.query_params.get("week"))
+    is_final = request.query_params.get("final") == "true"
+    
+    course = get_course_details(course_id)
+    quiz_json = abhi.generate_assessment(course["topic"], week, is_final)
+    
+    return JSONResponse(json.loads(quiz_json))
+
+@app.post("/api/learn/course/{course_id}/quiz/submit")
+async def submit_quiz_api(request: Request, course_id: int):
+    data = await request.json()
+    passed = data.get("passed")
+    week = data.get("week")
+    
+    if passed:
+        
+        pass
+        
+    return JSONResponse({"message": "Quiz submitted", "unlocked": passed})
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 9000))  
+    print(f"Starting Server on http://127.0.0.1:{port} with Auto-Reload...")
+
+    #uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=port)
+

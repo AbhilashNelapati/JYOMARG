@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Checker | JYOMARG</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #050510;
+            --bg-panel: rgba(20, 20, 35, 0.6);
+            --primary-neon: #00f3ff;
+            --secondary-neon: #bc13fe;
+            --accent-success: #0aff68;
+            --accent-danger: #ff2a6d;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glow-primary: 0 0 15px rgba(0, 243, 255, 0.4);
+            --glow-text: 0 0 10px rgba(0, 243, 255, 0.6);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-neon) var(--bg-deep);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(5, 5, 16, 0.85);
+            backdrop-filter: blur(20px);
+            border-right: var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-box {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-left: 10px;
+        }
+
+        .brand-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, var(--primary-neon));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--glow-text);
+            letter-spacing: 2px;
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 8px var(--primary-neon));
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #fff;
+            border-color: rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .nav-link.active {
+            border-color: var(--primary-neon);
+            color: var(--primary-neon);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: var(--glass-border);
+            padding-top: 25px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary-neon);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .user-role {
+            color: var(--primary-neon);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-danger);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            padding: 10px;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            text-shadow: var(--glow-primary);
+        }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--primary-neon);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        textarea:focus,
+        input[type="text"]:focus {
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-neon);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .btn-magic {
+            background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+            font-size: 1.1rem;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+
+        .btn-magic:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+        }
+
+        .btn-magic:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results Section */
+        #results {
+            display: none;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--primary-neon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-neon);
+            text-shadow: var(--glow-text);
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--secondary-neon);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 4px;
+            border: 1px solid;
+        }
+
+        .match {
+            border-color: var(--accent-success);
+            color: var(--accent-success);
+            background: rgba(10, 255, 104, 0.1);
+        }
+
+        .missing {
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+            background: rgba(255, 42, 109, 0.1);
+        }
+
+        .improved-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+
+        .edit-area {
+            background: #1a1a2e;
+            border: 1px solid var(--secondary-neon);
+            border-radius: 15px;
+            padding: 25px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #a5b4fc;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            height: 500px;
+            overflow-y: auto;
+            outline: none;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-neon);
+        }
+
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 16, 0.9);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(0, 243, 255, 0.1);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .scanner-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100px;
+            width: 100px;
+            height: 100%;
+            background: var(--primary-neon);
+            box-shadow: 0 0 10px var(--primary-neon);
+            animation: scan 1.5s infinite linear;
+        }
+
+        @keyframes scan {
+            to {
+                left: 400px;
+            }
+        }
+
+        .active-file-indicator {
+            background: var(--glass);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-neon);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .highlight-item {
+            background: rgba(10, 255, 104, 0.08);
+            border-left: 4px solid var(--accent-success);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .alignment-item {
+            background: rgba(0, 243, 255, 0.05);
+            border-left: 4px solid var(--primary-neon);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="sidebar">
+        <div class="brand-box">
+            <i class="fas fa-atom brand-icon"></i>
+            <span class="brand-logo">JYOMARG</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/abhi" class="nav-link">
+                    <i class="fas fa-microchip"></i>
+                    <span>ABHI Core</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/tutor" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>AI Tutor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/learn" class="nav-link">
+                    <i class="fas fa-book-reader"></i>
+                    <span>LEARN</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/career-architect" class="nav-link active">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Career Architect</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <img src="/static/images/Avatar.png" alt="User" class="user-avatar">
+                <div class="user-info">
+                    <span class="user-name">{{ user.name }}</span>
+                    <span class="user-role">ATS Optimizer</span>
+                </div>
+            </div>
+            <a href="/logout" class="logout-btn"><i class="fas fa-power-off"></i> Disconnect</a>
+        </div>
+    </nav>
+
+    <main class="main-wrapper">
+        <div id="loader">
+            <i class="fas fa-id-card-alt fa-3x text-neon" style="animation: pulse 1.5s infinite"></i>
+            <h2 class="text-neon" style="margin-top:20px;">ABHI IS SCANNING FOR ATS COMPLIANCE...</h2>
+            <div class="scanner-bar"></div>
+        </div>
+
+        <h1><i class="fas fa-search-plus"></i> ATS Score Optimizer</h1>
+
+        <div class="glass-panel">
+            <div class="grid">
+                <div class="input-panel">
+                    <div class="input-group">
+                        <label>1. Target Role or Job Description</label>
+                        <textarea id="jd-input"
+                            placeholder="Paste the full job description here for maximum accuracy..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>2. Upload Personal Resume</label>
+                        <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-neon"></i>
+                            <p id="file-status">Click to upload Resume (PDF/DOCX/TXT)</p>
+                            <input type="file" id="file-input" hidden accept=".pdf,.docx,.txt"
+                                onchange="handleFileUpload(this)">
+                        </div>
+                        <div id="active-file" style="display: none;" class="active-file-indicator">
+                            <i class="fas fa-file-pdf text-neon"></i>
+                            <span id="file-name">filename.pdf</span>
+                            <i class="fas fa-times" style="margin-left:auto; cursor:pointer;" onclick="clearFile()"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-panel">
+                    <label>Or Paste Resume Text Directly</label>
+                    <textarea id="resume-input"
+                        style="height: 385px; font-family: 'Consolas', monospace; white-space: pre;"
+                        placeholder="Paste your resume content here..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn-magic" id="analyze-btn" onclick="startAnalysis()">
+                <i class="fas fa-wand-sparkles"></i> RECONSTRUCT & OPTIMIZE
+            </button>
+        </div>
+
+        <div id="results">
+            <div class="glass-panel" style="text-align: center;">
+                <div class="score-circle" id="total-score">
+                    0
+                    <div class="score-label">ATS Score</div>
+                </div>
+                <p id="overall-feedback" class="text-dim"></p>
+            </div>
+
+            <div class="grid">
+                <div class="glass-panel">
+                    <label><i class="fas fa-key"></i> Key Keywords</label>
+                    <div id="keyword-matches" style="margin-bottom: 20px;"></div>
+
+                    <label><i class="fas fa-exclamation-triangle"></i> Missing from Resume</label>
+                    <div id="missing-keywords"></div>
+                </div>
+
+                <div class="glass-panel">
+                    <label><i class="fas fa-lightbulb"></i> Optimization Suggestions</label>
+                    <div id="suggestions-list"></div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="glass-panel">
+                    <label><i class="fas fa-align-left"></i> Alignment & Structure Suggestions</label>
+                    <div id="alignment-list"></div>
+                </div>
+
+                <div class="glass-panel">
+                    <label style="color: var(--accent-success);"><i class="fas fa-check-double"></i> JD Matches
+                        Found</label>
+                    <div id="highlights-list"></div>
+                </div>
+            </div>
+
+            <div class="improved-header">
+                <h2 style="margin: 0;"><i class="fas fa-terminal"></i> AI OPTIMIZED RESUME (RECONSTRUCTED)</h2>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-action" onclick="copyImproved()"><i class="fas fa-copy"></i> Copy Text</button>
+                    <button class="btn-action" onclick="document.getElementById('improved-area').focus()"><i
+                            class="fas fa-edit"></i> Edit Content</button>
+                </div>
+            </div>
+            <div id="improved-area" class="edit-area" contenteditable="true"></div>
+            <p class="text-dim" style="text-align: center; margin-top: 15px;">
+                <i class="fas fa-info-circle"></i> This version has been reconstructed to maximize ATS keyword density
+                while maintaining professional readability.
+            </p>
+        </div>
+    </main>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        async function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('file-status').innerText = "Analyzing file...";
+            const fileType = file.name.split('.').pop().toLowerCase();
+
+            try {
+                let text = "";
+                if (fileType === 'pdf') {
+                    text = await extractPDFText(file);
+                } else if (fileType === 'docx') {
+                    text = await extractDocxText(file);
+                } else {
+                    text = await file.text();
+                }
+
+                document.getElementById('resume-input').value = text;
+                document.getElementById('file-name').innerText = file.name;
+                document.getElementById('active-file').style.display = 'flex';
+                document.getElementById('file-status').innerText = "File Analyzed Successfully";
+            } catch (error) {
+                alert("Error reading file: " + error.message);
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('file-input').value = "";
+            document.getElementById('resume-input').value = "";
+            document.getElementById('active-file').style.display = 'none';
+            document.getElementById('file-status').innerText = "Click to upload Resume (PDF/DOCX/TXT)";
+        }
+
+        async function extractPDFText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+
+                // Sort items by vertical position descending, then horizontal position ascending
+                // This helps preserve the visual structure much better than default order
+                const items = content.items.sort((a, b) => {
+                    if (Math.abs(a.transform[5] - b.transform[5]) > 2) {
+                        return b.transform[5] - a.transform[5];
+                    }
+                    return a.transform[4] - b.transform[4];
+                });
+
+                let lastY = -1;
+                let pageText = "";
+                for (const item of items) {
+                    if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 2) {
+                        pageText += "\n";
+                    } else if (lastY !== -1) {
+                        pageText += "  "; // Add some spacing for same-line items
+                    }
+                    pageText += item.str;
+                    lastY = item.transform[5];
+                }
+                fullText += pageText + "\n\n";
+            }
+            return fullText;
+        }
+
+        async function extractDocxText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        }
+
+        async function startAnalysis() {
+            const resume_text = document.getElementById('resume-input').value;
+            const jd_text = document.getElementById('jd-input').value;
+
+            if (!resume_text || !jd_text) {
+                return alert("Please provide both Job Description and Resume content.");
+            }
+
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/ats/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resume_text, jd_text })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                renderResults(data);
+            } catch (error) {
+                alert("Analysis failed: " + error.message);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function renderResults(data) {
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('total-score').innerHTML = `${data.score}<div class="score-label">ATS Score</div>`;
+
+            // Keywords
+            const matchesCont = document.getElementById('keyword-matches');
+            const missingCont = document.getElementById('missing-keywords');
+            matchesCont.innerHTML = data.keyword_matches.map(k => `<span class="keyword-tag match">${k}</span>`).join('');
+            missingCont.innerHTML = data.missing_keywords.map(k => `<span class="keyword-tag missing">${k}</span>`).join('');
+
+            // Suggestions
+            const suggCont = document.getElementById('suggestions-list');
+            suggCont.innerHTML = data.content_suggestions.map(s => `<div class="suggestion-item">${s}</div>`).join('');
+
+            // Alignment Suggestions
+            const alignCont = document.getElementById('alignment-list');
+            if (data.alignment_suggestions) {
+                alignCont.innerHTML = data.alignment_suggestions.map(s => `<div class="alignment-item">${s}</div>`).join('');
+            } else {
+                alignCont.innerHTML = `<p class="text-dim">No specific structural issues found.</p>`;
+            }
+
+            // Highlights
+            const highCont = document.getElementById('highlights-list');
+            if (data.jd_matches_highlighted && data.jd_matches_highlighted.length > 0) {
+                highCont.innerHTML = data.jd_matches_highlighted.map(h => `<div class="highlight-item"><i class="fas fa-check-circle" style="color:var(--accent-success); margin-right:10px;"></i>${h}</div>`).join('');
+            } else {
+                highCont.innerHTML = `<p class="text-dim">No direct matches found. Try optimizing based on suggestions.</p>`;
+            }
+
+            // Improved Content
+            document.getElementById('improved-area').innerText = data.ai_improved_resume;
+
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            // Animate score
+            anime({
+                targets: '#total-score',
+                scale: [0.5, 1],
+                opacity: [0, 1],
+                duration: 1000,
+                easing: 'easeOutElastic(1, .8)'
+            });
+        }
+
+        function copyImproved() {
+            const text = document.getElementById('improved-area').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Optimized resume content copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+
+</html>

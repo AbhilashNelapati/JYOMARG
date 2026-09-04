@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+users.db
+debug_ai.log
+*.txt
